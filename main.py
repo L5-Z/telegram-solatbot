@@ -11,11 +11,11 @@ from itertools import islice
 from threading import Timer
 from requests.exceptions import ConnectionError
 from telegram import Bot, Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
-from telegram.utils.request import Request
+from telegram.ext import Updater, CommandHandler, CallbackContext, ApplicationBuilder
+from asyncio import Queue
 
 # Set the maximum connection pool size to 8
-request = Request(con_pool_size=20)
+#request = Request(con_pool_size=20)
 
 # Your bot token and chat ID
 with open('botKey.txt', 'r') as file:
@@ -24,12 +24,18 @@ with open('botKey.txt', 'r') as file:
 TELEGRAM_BOT_TOKEN = bot_key
 chat_id = None
 
+# Build app
+app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+
+# Establish Chat IDs
+
+
 # Initialize a global dictionary to store chat_id information
 global chat_id_dict
 chat_id_dict = {}
 
 # Custom durations in minutes (initially empty)
-custom_durations = [0, 0, 0, 0, 0]
+custom_durations = [False, False, False, False, False], #Time for 5,10,15,20,30
 
 # Set the timezone to Singapore (Asia/Singapore)
 singapore_timezone = pytz.timezone('Asia/Singapore')
@@ -70,7 +76,7 @@ def checker(update: Update, context: CallbackContext):
         chat_id_dict[chat_id] = {
             'reminders_enabled': False,  # Correctly set 'reminders_enabled' here
             'daily_timings_enabled': False,
-            'custom_durations': [0, 0, 0, 0, 0],
+            'custom_durations': [False, False, False, False, False], #Time for 5,10,15,20,30
             'custom_reminder_sent': False,
             'prayer_reminder_sent': False
         }
@@ -398,23 +404,23 @@ def run_scraper():
 
 
 # Create a Bot instance with your bot token
-bot = Bot(token=TELEGRAM_BOT_TOKEN, request=request)
-# Create an Updater with the Bot instance
-updater = Updater(bot=bot)
-# Get the dispatcher to register handlers
-dispatcher = updater.dispatcher
+bot = Bot(token=TELEGRAM_BOT_TOKEN)
+
+# Create an update queue
+update_queue = Queue()
+# Now initialize the Updater with both bot and update_queue, Create an Updater with the Bot instance
+updater = Updater(bot=bot, update_queue=update_queue)
 
 # Register the command handlers
-dispatcher.add_handler(CommandHandler("start", start_command))
-dispatcher.add_handler(CommandHandler("test", test_command))
-dispatcher.add_handler(CommandHandler("timings", timings_command))
-dispatcher.add_handler(CommandHandler("list", list_command))
-dispatcher.add_handler(
-    CommandHandler("customreminder", custom_reminder_command, pass_args=True))
-dispatcher.add_handler(CommandHandler("daily", daily_command))
-dispatcher.add_handler(CommandHandler("toggle", toggle_command))
-dispatcher.add_handler(CommandHandler("help", help_command))
-dispatcher.add_handler(CommandHandler("patch", patch_command))
+app.add_handler(CommandHandler("start", start_command))
+app.add_handler(CommandHandler("test", test_command))
+app.add_handler(CommandHandler("timings", timings_command))
+app.add_handler(CommandHandler("list", list_command))
+app.add_handler(CommandHandler("customreminder", custom_reminder_command))
+app.add_handler(CommandHandler("daily", daily_command))
+app.add_handler(CommandHandler("toggle", toggle_command))
+app.add_handler(CommandHandler("help", help_command))
+app.add_handler(CommandHandler("patch", patch_command))
 
 # Start the bot
 updater.start_polling()
