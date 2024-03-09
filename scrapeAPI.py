@@ -1,13 +1,17 @@
 # Scrapes and returns solat times
 import requests
 import json
+import time
 
+
+def timestamp():
+  return str(int(time.time()))
 
 # Function to scrape prayer times from the website
 def GetPrayerTime():
-    url = 'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime'
+    url = f'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime?v=${timestamp}'
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers={'Cache-Control': 'no-cache'})
         if response.status_code == 200:
             data = response.json()
             return data
@@ -51,6 +55,7 @@ def filterInput(input_dict):
 # Prints the timings
 def printTimes():
   prayer_times = GetPrayerTime()
+  print(prayer_times)
   if prayer_times is not None:
     # Extract the date and Hijri information
     prayer_date = prayer_times.get('PrayerDate', 'N/A')

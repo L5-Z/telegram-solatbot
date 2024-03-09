@@ -87,15 +87,17 @@ async def test_command(message):
 @sbot.message_handler(regexp='timings')
 @sbot.message_handler(commands=['timings'])
 async def timings_command(message):
+    checker(message.chat.id)
     reply = printTimes()
     # Send the message with prayer times
-    await sbot.reply_to(message.chat.id, reply)
+    await sbot.send_message(message.chat.id, reply)
 
 
 # /daily command handler
 @sbot.message_handler(regexp='daily')
 @sbot.message_handler(commands=['daily'])
 async def daily_command(message):
+    checker(message.chat.id)
     if chat_id in chat_id_dict:
         chat_info = chat_id_dict[chat_id]
         daily_timings_enabled = not chat_info.get('daily_timings_enabled', False)
@@ -124,6 +126,7 @@ async def daily_command(message):
 @sbot.message_handler(regexp='toggle')
 @sbot.message_handler(commands=['toggle'])
 async def toggle_command(message):
+    checker(message.chat.id)
     # Toggle the reminders state
     if message.chat.id in chat_id_dict:
         chat_info = chat_id_dict[message.chat.id]
@@ -143,6 +146,7 @@ async def toggle_command(message):
 @sbot.message_handler(regexp='help')
 @sbot.message_handler(commands=['help'])
 async def help_command(message):
+  checker(message.chat.id)
   # List of available commands
   commands = [
       "/toggle - Toggle reminders on or off",
@@ -164,6 +168,7 @@ async def help_command(message):
 @sbot.message_handler(regexp='patch')
 @sbot.message_handler(commands=['patch'])
 async def patch_command(message):
+  checker(message.chat.id)
   # Patch thread
   patch_0_0_2 = [
       "\nPatch: v0.0.2  |  27/9/23",
