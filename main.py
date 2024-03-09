@@ -9,7 +9,7 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
 from scrapeAPI import printTimes
-from convertAPI import cycleCheck
+from convertAPI import cycleCheck, testprint
 
 # Bot token
 with open('botKey.txt', 'r') as file:
@@ -116,8 +116,6 @@ async def daily_command(message):
     else:
         await sbot.send_message(message.chat.id, "Please use /start to initialize the chat.")
 
-# Rest of your code...
-
 
 
 # /toggle command handler
@@ -125,6 +123,7 @@ async def daily_command(message):
 @sbot.message_handler(commands=['toggle'])
 async def toggle_command(message):
     checker(message.chat.id)
+
     # Toggle the reminders state
     if message.chat.id in chat_id_dict:
         chat_info = chat_id_dict[message.chat.id]
@@ -148,7 +147,7 @@ async def help_command(message):
   commands = [
       "/toggle - Toggle reminders on or off",
       "/timings - Get current prayer times",
-      "/daily - Toggle daily prayer times (at 5AM) on or off",
+      "/daily - Toggle daily prayer times (at 4AM) on or off",
       "/list - List current slots\n",
       "/customreminder [<index>] <minutes> - Set or edit a custom reminder (0 minutes to disable)\n(e.g. /customreminder 30 creates a new 30 minute pre-reminder while /customreminder 1 45 edits the pre-reminder in Slot 1 to 45 minutes.\nOmitting <index> changes the bot to 'create' mode\nNote: This is the only command with a format)\n",
       "/patch - Lists updates to the bot", 
@@ -200,7 +199,7 @@ print("Bot will now run...")
 
 async def main():
     print(chat_id_dict)
-    cycleCheck(chat_id_dict)
+    await cycleCheck(chat_id_dict)
     await asyncio.sleep(1)
     await main()
 
