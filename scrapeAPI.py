@@ -2,29 +2,25 @@
 import requests
 import json
 import time
-
-
-def timestamp():
-  return str(int(time.time()))
+import asyncio
 
 # Function to scrape prayer times from the website
-def GetPrayerTime():
-    url = f'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime?v=${timestamp}'
-    try:
-        response = requests.get(url, headers={'Cache-Control': 'no-cache'})
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            print(f"Failed to retrieve data. Status code: {response.status_code}")
-            return None
-    except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
-        return None
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-        return None
-        
+async def GetPrayerTime():
+  url = f'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime?v=${str(int(time.time()))}'
+  try:
+      response = requests.get(url, headers={'Cache-Control': 'no-cache'})
+      if response.status_code == 200:
+          data = response.json()
+          return data
+      else:
+          print(f"Failed to retrieve data. Status code: {response.status_code}")
+          return None
+  except requests.exceptions.RequestException as e:
+      print(f"Error: {e}")
+      return None
+  except json.JSONDecodeError as e:
+      print(f"Error decoding JSON: {e}")
+      return None
     
 # Function to manually add AM/PM based on prayer type
 def formatTimes(input_dict):
@@ -53,8 +49,8 @@ def filterInput(input_dict):
     
 
 # Prints the timings
-def printTimes():
-  prayer_times = GetPrayerTime()
+async def printTimes():
+  prayer_times = await GetPrayerTime()
   if prayer_times is not None:
     # Extract the date and Hijri information
     prayer_date = prayer_times.get('PrayerDate', 'N/A')

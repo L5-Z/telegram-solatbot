@@ -13,8 +13,9 @@ def scheduleRunFeedback():
     print("Retrieved updated prayer times\n")
 
 # Schedule the scraper to run daily at 4 AM SGT
-schedule.every().day.at("04:00").do(GetPrayerTime)
-schedule.every().day.at("04:00").do(scheduleRunFeedback)
+async def scheduleRun():
+    schedule.every().day.at("04:00").do(await GetPrayerTime)
+    schedule.every().day.at("04:00").do(scheduleRunFeedback)
 
 
 # Function to convert 12-hour time to 24-hour time
@@ -25,11 +26,11 @@ def convert_to_24_hour_format(time_str):
     except ValueError:
         return time_str  # Return the input unchanged if it's not in the expected format
 
-def cycleCheck():
+async def cycleCheck():
     now = datetime.now(sg_timezone)  # Use the Singapore timezone
 
     # Get raw prayer time data
-    solatTimesRaw = GetPrayerTime()
+    solatTimesRaw = await GetPrayerTime()
 
     # Filter data
     filtered_data = filterInput(solatTimesRaw)
