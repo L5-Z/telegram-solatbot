@@ -2,3 +2,5 @@ botKey.txt
 chat_ids.txt
 # Any cached python files
 *.pyc
+/.pyc/
+/__pycache__/
