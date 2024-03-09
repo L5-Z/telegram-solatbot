@@ -1,7 +1,5 @@
 import os
-import requests
 import httpx
-import json
 import schedule
 import threading
 import time
@@ -13,6 +11,13 @@ from requests.exceptions import ConnectionError
 from telegram import Bot, Update
 from telegram.ext import Updater, CommandHandler, CallbackContext, ApplicationBuilder
 from asyncio import Queue
+
+from scrapeAPI import ScrapeAPI
+
+# Merge Classes
+
+# Create an instance of the scrape class
+scrape = ScrapeAPI('scrape')
 
 # Set the maximum connection pool size to 8
 #request = Request(con_pool_size=20)
@@ -43,25 +48,6 @@ singapore_timezone = pytz.timezone('Asia/Singapore')
 # Global variable to track whether reminders are enabled or disabled
 reminders_enabled = False
 daily_timings_enabled = False
-
-# Function to scrape prayer times from the website
-def GetPrayerTime():
-  url = 'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime'
-  try:
-    response = requests.get(url)
-    if response.status_code == 200:
-      data = response.json()
-      return data
-    else:
-      print(f"Failed to retrieve data. Status code: {response.status_code}")
-      return None
-  except requests.exceptions.RequestException as e:
-    print(f"Error: {e}")
-    return None
-  except json.JSONDecodeError as e:
-    print(f"Error decoding JSON: {e}")
-    return None
-
 
 def checker(update: Update, context: CallbackContext):
     global chat_id
@@ -138,37 +124,14 @@ def test_command(update: Update, context: CallbackContext):
 
 # /timings command handler
 def timings_command(update: Update, context: CallbackContext):
-  global chat_id
-  chat_id = update.message.chat_id
-  bot = context.bot
+    global chat_id
+    chat_id = update.message.chat_id
+    bot = context.bot
 
-  # Get current prayer times
-  prayer_times = GetPrayerTime()
-  if prayer_times is not None:
-    # Extract the date and Hijri information
-    prayer_date = prayer_times.get('PrayerDate', 'N/A')
-    hijri_date = prayer_times.get('Hijri', 'N/A')
+    message = scrape.printTimes()
 
-    # Extract the AM and PM timings from the JSON response
-    subuh_time = prayer_times.get('Subuh', 'N/A')
-    syuruk_time = prayer_times.get('Syuruk', 'N/A')
-    zohor_time = prayer_times.get('Zohor', 'N/A')
-    asar_time = prayer_times.get('Asar', 'N/A')
-    maghrib_time = prayer_times.get('Maghrib', 'N/A')
-    isyak_time = prayer_times.get('Isyak', 'N/A')
-
-    # Create a message with the prayer times and additional information
-    message = f"Current Prayer Times for {prayer_date}\n----------------------------------------\nHijri: {hijri_date}\n----------------------------------------\n\n"
-    message += f"Subuh: {subuh_time} AM\n"
-    message += f"Syuruk: {syuruk_time} AM\n"
-    message += f"Zohor: {zohor_time} PM\n"
-    message += f"Asar: {asar_time} PM\n"
-    message += f"Maghrib: {maghrib_time} PM\n"
-    message += f"Isyak: {isyak_time} PM\n"
     # Send the message with prayer times
     bot.send_message(chat_id, message)
-  else:
-    bot.send_message(chat_id, "Failed to retrieve prayer times.")
 
 # Define a command handler for /list
 def list_command(update: Update, context: CallbackContext):
@@ -395,7 +358,7 @@ def patch_command(update: Update, context: CallbackContext):
 # Function to run the scraper
 def run_scraper():
   # Get current prayer times
-  prayer_times = GetPrayerTime()
+  prayer_times = scrape.GetPrayerTime()
   if prayer_times is not None:
     # You can process the prayer times here if needed
     pass
@@ -438,17 +401,6 @@ def convert_to_24_hour_format(time_str):
     except ValueError:
         return time_str  # Return the input unchanged if it's not in the expected format
 
-# Function to manually add AM/PM based on prayer type
-def add_am_pm(prayer_times_dict):
-    for prayer, time in prayer_times_dict.items():
-        if prayer in ("Subuh", "Syuruk"):
-            prayer_times_dict[prayer] = f"{time} AM"
-        else:
-            prayer_times_dict[prayer] = f"{time} PM"
-    return prayer_times_dict
-
-
-
 def set_prayer_reminder_sent_false(chat_info):
     chat_info['prayer_reminder_sent'] = False
 
@@ -460,26 +412,23 @@ while True:
     print("current chatid ", chat_id)
     now = datetime.now(singapore_timezone)  # Use the Singapore timezone
 
-    # Get prayer times
-    prayer_times_ori = GetPrayerTime()
+    # Get raw prayer time data
+    solatTimesRaw = scrape.GetPrayerTime()
 
-    # Remove the 'Hijri' and 'PrayerDate' key and value from the dictionary
-    date_dict = {}
+    # Filter data
+    filtered_data = scrape.filterInput(solatTimesRaw)
+    solatTimes = filtered_data[0] # Only prayer times
+    dateTime = filtered_data[1] # Only dates Islamic, Roman
 
-    if prayer_times_ori is not None:
-      date_dict['Hijri'] = prayer_times_ori.pop('Hijri')
-      date_dict['PrayerDate'] = prayer_times_ori.pop('PrayerDate')
-    else:
-      continue
   
     # Add AM/PM indications based on prayer type
-    prayer_times_with_am_pm = add_am_pm(prayer_times_ori)
+    solatTimesFormatted = scrape.formatTimes(solatTimes)
   
     # Convert prayer times to 24-hour format in SGT, excluding 'PrayerDate'
-    prayer_times = {prayer: convert_to_24_hour_format(time) for prayer, time in prayer_times_with_am_pm.items() if prayer != 'PrayerDate'}
+    prayer_times = {prayer: convert_to_24_hour_format(time) for prayer, time in solatTimes.items() if prayer != 'PrayerDate'}
 
     # Extract the date value and convert it to a datetime object
-    prayer_date_str = date_dict.get('PrayerDate', '')  # Use the original dictionary here
+    prayer_date_str = dateTime.get('PrayerDate', '')  # Use the original dictionary here
     prayer_date_format = '%d %B %Y'  # Define the format of the date string
     try:
         prayer_date = datetime.strptime(prayer_date_str, prayer_date_format)
