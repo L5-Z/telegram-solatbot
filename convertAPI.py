@@ -1,12 +1,25 @@
 # Converts solat times into 24-hour format in SGT and handles time based events
 import pytz
 import schedule
+from telebot.async_telebot import AsyncTeleBot
 from threading import Timer
 from datetime import datetime, timedelta, timezone
 
 from scrapeAPI import GetPrayerTime, formatTimes, filterInput
-from main import send_reminder
 
+
+# Bot token
+with open('botKey.txt', 'r') as file:
+    bot_key = str(file.read())
+
+TELEGRAM_BOT_TOKEN = bot_key
+
+# Create a Bot instance with bot token
+sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
+
+# Function to send a reminder
+async def send_reminder(message):
+    await sbot.reply_to(message.chat.id, message)
 
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
