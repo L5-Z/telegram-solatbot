@@ -1,9 +1,11 @@
 # Converts solat times into 24-hour format in SGT and handles time based events
 import pytz
 import schedule
+from threading import Timer
 from datetime import datetime, timedelta, timezone
 
 from scrapeAPI import GetPrayerTime, formatTimes, filterInput
+from main import send_reminder
 
 
 # Set the timezone to Singapore (Asia/Singapore)
@@ -26,7 +28,13 @@ def convert_to_24_hour_format(time_str):
     except ValueError:
         return time_str  # Return the input unchanged if it's not in the expected format
 
-async def cycleCheck():
+async def set_prayer_reminder_sent_false(chat_info):
+    chat_info['prayer_reminder_sent'] = False
+
+async def set_custom_reminder_sent_false(chat_info):
+    chat_info['custom_reminder_sent'] = False
+
+async def cycleCheck(chat_id_dict):
     now = datetime.now(sg_timezone)  # Use the Singapore timezone
 
     # Get raw prayer time data
@@ -49,7 +57,7 @@ async def cycleCheck():
     solatDateFormatted = datetime.strptime(prayer_date_str, prayer_date_format)
 
     # Initialize variables for nearest time and threshold
-    nearest_time = None
+    last_prayer_time = None
     threshold_hour = None
     threshold_minute = None
 
@@ -65,24 +73,24 @@ async def cycleCheck():
             minute=masa_time.minute,
             second=0,
             microsecond=0,
-            tzinfo=timezone(timedelta(hours=8))
+            tzinfo=timezone(sg_timezone)
         )
         
-        if prayer_time > now and (nearest_time is None or prayer_time < nearest_time):
-            nearest_time = prayer_time
+        if prayer_time > now and (last_prayer_time is None or prayer_time < last_prayer_time):
+            last_prayer_time = prayer_time
             threshold_hour = prayer_time.hour
             threshold_minute = prayer_time.minute
             break
 
     # Check if a nearest prayer time was found
-    if nearest_time is not None:
+    if last_prayer_time is not None:
         # Define the threshold time as the nearest upcoming prayer time
         threshold_time = now.replace(
           hour=threshold_hour,
           minute=threshold_minute,
           second=0,
           microsecond=0,
-          tzinfo=timezone(timedelta(hours=8))
+          tzinfo=timezone(sg_timezone)
         )
 
         # Iterate through chat_id_dict to check and update values
@@ -91,9 +99,9 @@ async def cycleCheck():
             # Send reminders when now >= threshold time
             if chat_info['reminders_enabled'] and now <= threshold_time + timedelta(minutes=1) and not chat_info['prayer_reminder_sent'] and now >= threshold_time:
                 reminder_message = f'{prayer} time: {masa}'
-                send_reminder(sbot, chat_id, reminder_message)
+                send_reminder(chat_id, reminder_message)
                 chat_info['prayer_reminder_sent'] = True
-                t = Timer(65, set_prayer_reminder_sent_false, args=(chat_info,))
+                t = Timer(65, set_prayer_reminder_sent_false, args=(chat_info))
                 t.start()
 
             # Check if 'custom_duration' key exists in chat_info
@@ -101,7 +109,7 @@ async def cycleCheck():
                 # Trigger the custom reminders based on custom durations
                 for i, custom_duration in enumerate(chat_info.get('custom_durations', [])):
                     # Calculate the time difference as a timedelta
-                    time_difference = nearest_time - timedelta(minutes=custom_duration)
+                    time_difference = last_prayer_time - timedelta(minutes=custom_duration)
                     if now >= time_difference and now <= time_difference + timedelta(minutes=1) and not chat_info['custom_reminder_sent']:
                         # Trigger the custom reminder for slot i
                         send_custom_reminder(sbot, chat_id, f"{prayer}", masa, custom_duration)

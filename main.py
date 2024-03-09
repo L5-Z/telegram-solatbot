@@ -1,9 +1,7 @@
 import os
 import asyncio
-import httpx
 import schedule
 import functools
-import time
 from datetime import datetime, timedelta, timezone
 from threading import Timer
 import telebot
@@ -198,17 +196,11 @@ async def patch_command(message):
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
 
-def set_prayer_reminder_sent_false(chat_info):
-    chat_info['prayer_reminder_sent'] = False
-
-def set_custom_reminder_sent_false(chat_info):
-    chat_info['custom_reminder_sent'] = False
-
 print("Bot will now run...")
 
 async def main():
     print(chat_id_dict)
-    cycleCheck()
+    cycleCheck(chat_id_dict)
     await asyncio.sleep(1)
     await main()
 
