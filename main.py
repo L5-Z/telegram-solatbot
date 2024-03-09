@@ -206,10 +206,6 @@ def set_custom_reminder_sent_false(chat_info):
 
 print("Bot will now run...")
 
-async def schedule_task():
-    timings_command_instance = functools.partial(timings_command)
-    schedule.every().day.at("04:00").do(lambda: asyncio.run(timings_command))
-
 async def main():
     print(chat_id_dict)
     cycleCheck()
@@ -217,6 +213,10 @@ async def main():
     await main()
 
 async def run_bot():
+    async def schedule_task():
+        timings_command_instance = functools.partial(timings_command)
+        schedule.every().day.at("04:00").do(lambda: asyncio.run(timings_command_instance))
+
     await schedule_task()
     await sbot.infinity_polling(interval=1, timeout=0)
 
