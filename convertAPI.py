@@ -28,7 +28,7 @@ async def send_reminder(chat_id, message):
 sg_timezone = pytz.timezone('Asia/Singapore')
 offset1Behind = pytz.timezone('Asia/Bangkok')
 offset1HalfBehind = pytz.timezone('Asia/Yangon')
-offset2Behind = pytz.timezone('Australia/Brisbane')
+offset2HalfBehind = pytz.timezone('Asia/Kolkata')
 
 def scheduleRunFeedback():
     print("Retrieved updated prayer times\n")
@@ -55,7 +55,8 @@ async def set_custom_reminder_sent_false(chat_info):
 
 async def cycleCheck(chat_id_dict):
     #now = datetime.now(sg_timezone)  # Use the Singapore timezone
-    now = datetime.now(offset2Behind)
+    now = datetime.now(offset2HalfBehind)
+    print(now)
     
     # Get raw prayer time data
     solatTimesRaw = await GetPrayerTime()
@@ -88,7 +89,7 @@ async def cycleCheck(chat_id_dict):
             microsecond=0
         )
         #prayer_time = sg_timezone.localize(prayer_time)
-        prayer_time = offset2Behind.localize(prayer_time)
+        prayer_time = offset2HalfBehind.localize(prayer_time)
 
         if (prayer == 'Isyak') and prayer_time < now :
             print ("Returning")
