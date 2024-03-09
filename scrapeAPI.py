@@ -65,18 +65,24 @@ async def printTimes():
     isyak_time = prayer_times.get('Isyak', 'N/A')
 
     # Create a message with the prayer times and additional information
-    message = f"Current Prayer Times for {prayer_date}\n"
-    message += f"----------------------------------------\n"
-    message += f"Hijri: {hijri_date}\n"
-    message += f"----------------------------------------\n"
+    message = ""
+    message += u"\U0001F54C"
+    message += f"   *\Daily Prayer Times*   "
+    message += u"\U0001F54C"
     message += f"\n\n"
-    message += f"Subuh: {subuh_time} AM\n"
-    message += f"Syuruk: {syuruk_time} AM\n"
-    message += f"Zohor: {zohor_time} PM\n"
-    message += f"Asar: {asar_time} PM\n"
-    message += f"Maghrib: {maghrib_time} PM\n"
-    message += f"Isyak: {isyak_time} PM\n"
+    message += f"*\Date:* {prayer_date}\n"
+    message += f"*\Hijri:* {hijri_date}\n"
+    message += f"\n"
+    message += f"          *\Subuh:* {subuh_time} AM\n\n"
+    message += f"          *\Syuruk:* {syuruk_time} AM\n\n"
+    message += f"          *\Zohor:* {zohor_time} PM\n\n"
+    message += f"          *\Asar:* {asar_time} PM\n\n"
+    message += f"          *\Maghrib:* {maghrib_time} PM\n\n"
+    message += f"          *\Isyak:* {isyak_time} PM\n\n"
 
+    # Escape special characters like '-' using '\'
+    # message = message.replace('-', r'\-')
+    # message = message.replace('#', r'\#')
     # Send the message with prayer times
     return message
   else:

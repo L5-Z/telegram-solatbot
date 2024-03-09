@@ -88,7 +88,7 @@ async def timings_command(message):
     checker(message.chat.id)
     reply = await printTimes()
     # Send the message with prayer times
-    await sbot.send_message(message.chat.id, reply)
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
 
 # /daily command handler
