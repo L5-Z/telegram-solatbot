@@ -18,8 +18,8 @@ TELEGRAM_BOT_TOKEN = bot_key
 sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 
 # Function to send a reminder
-async def send_reminder(message):
-    await sbot.reply_to(message.chat.id, message)
+async def send_reminder(chat_id, message):
+    await sbot.reply_to(chat_id, message)
 
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
