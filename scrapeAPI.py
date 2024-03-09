@@ -55,7 +55,6 @@ def filterInput(input_dict):
 # Prints the timings
 def printTimes():
   prayer_times = GetPrayerTime()
-  print(prayer_times)
   if prayer_times is not None:
     # Extract the date and Hijri information
     prayer_date = prayer_times.get('PrayerDate', 'N/A')

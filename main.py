@@ -131,7 +131,6 @@ async def toggle_command(message):
     if message.chat.id in chat_id_dict:
         chat_info = chat_id_dict[message.chat.id]
         reminders_enabled = not chat_info.get('reminders_enabled', False)
-        print("YES")
         chat_info['reminders_enabled'] = reminders_enabled
 
         if reminders_enabled:
