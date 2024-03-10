@@ -12,7 +12,7 @@ global last_prayer
 last_prayer = None
 
 def testprint():
-    print("works")
+    print("Suspend...")
 
 # Bot token
 with open('botKey.txt', 'r') as file:
