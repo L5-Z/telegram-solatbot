@@ -103,7 +103,7 @@ async def daily_command(message):
 
         if daily_timings_enabled:
             # Schedule the /timings command to run daily at a specific time (e.g., 3 AM)
-            schedule.every().day.at("05:00").do(timings_command, update, context)
+            schedule.every().day.at("05:00").do(timings_command)
 
         else:
             # Clear the scheduled job for /timings if daily timings are disabled

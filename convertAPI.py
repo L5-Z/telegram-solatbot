@@ -8,6 +8,9 @@ from datetime import datetime, timedelta, timezone
 
 from scrapeAPI import GetPrayerTime, formatTimes, filterInput
 
+global last_prayer
+last_prayer = None
+
 def testprint():
     print("works")
 
@@ -57,6 +60,8 @@ async def cycleCheck(chat_id_dict):
     #now = datetime.now(sg_timezone)  # Use the Singapore timezone
     now = datetime.now(sg_timezone)
     print(now)
+
+    global last_prayer
     
     # Get raw prayer time data
     solatTimesRaw = await GetPrayerTime()
@@ -76,6 +81,7 @@ async def cycleCheck(chat_id_dict):
     prayer_date_format = '%d %B %Y'  # Define the format of the date string
     solatDateFormatted = datetime.strptime(prayer_date_str, prayer_date_format)
 
+    print("Done format")
     # Find the nearest upcoming prayer time
     for prayer, masa in solatTimesFormatted.items():
         # Convert the masa time to a datetime object
@@ -98,6 +104,7 @@ async def cycleCheck(chat_id_dict):
         
         if prayer_time > now : #and (last_prayer_time is None or prayer_time < last_prayer_time):
             threshold_time = prayer_time
+            last_prayer = prayer_time
             print("exit on iteration: ", prayer, masa)
             print(now, "<", prayer_time)
             print("exit")
