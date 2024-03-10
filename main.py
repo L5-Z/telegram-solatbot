@@ -1,5 +1,6 @@
 import os
 import asyncio
+import re
 import schedule
 import functools
 from datetime import datetime, timedelta, timezone
@@ -42,15 +43,15 @@ def checker(chat_id):
 
     if chat_id not in chat_id_dict:
         chat_id_dict[chat_id] = {
-            'reminders_enabled': False,  # Correctly set 'reminders_enabled' here
+            'reminders_enabled': True,
             'daily_timings_enabled': False,
             'custom_durations': [False, False, False, False, False], #Time for 5,10,15,20,30
             'custom_reminder_sent': False,
             'prayer_reminder_sent': False
         }
     else:
-        reminders_enabled = chat_id_dict[chat_id]['reminders_enabled']  # Corrected line
-        daily_timings_enabled = chat_id_dict[chat_id]['daily_timings_enabled']  # Corrected line
+        reminders_enabled = chat_id_dict[chat_id]['reminders_enabled']
+        daily_timings_enabled = chat_id_dict[chat_id]['daily_timings_enabled']
         custom_durations = chat_id_dict[chat_id]['custom_durations'].copy()
 
 
@@ -67,11 +68,15 @@ async def send_reminder(message):
 @sbot.message_handler(commands=['start'])
 async def start_command(message):
     # Welcome message
-    welcome_message = "Thanks for using my bot!\n\nDo /help for a list of commands\nReminders are OFF by default, do /toggle to turn them on\n\nCurrent Version: v0.0.4\nUpdated and Patched as of 29/9/23\nDo /patch to view patchnotes\n\n"
+    welcome_message = "Thanks for using my bot!\n\nDo /help for a list of commands\nReminders are ON by default, do /toggle to turn them on\n\nCurrent Version: v0.0.4\nUpdated and Patched as of 29/9/23\nDo /patch to view patchnotes\n\n",
     welcome_message += "Bot made by L5Z (Faatih) :)"
     checker(message.chat.id)
     await sbot.send_message(message.chat.id, welcome_message)
 
+# /echo
+@sbot.message_handler(func=lambda m: re.match(r'^echo$', m.text))
+async def echo_msg(message):
+	await sbot.reply_to(message, message.text)
 
 # /test command handler
 @sbot.message_handler(regexp='test')
@@ -200,6 +205,7 @@ print("Bot will now run...")
 async def main():
     print(chat_id_dict)
     await cycleCheck(chat_id_dict)
+    testprint()
     await asyncio.sleep(15)
     await main()
 
