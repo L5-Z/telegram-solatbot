@@ -45,12 +45,11 @@ def filterInput(input_dict):
   else:
     print("Failed to filter data.")
     return None
-        
-    
 
 # Prints the timings
 async def printTimes():
   prayer_times = await GetPrayerTime()
+
   if prayer_times is not None:
     # Extract the date and Hijri information
     prayer_date = prayer_times.get('PrayerDate', 'N/A')
@@ -67,23 +66,24 @@ async def printTimes():
     # Create a message with the prayer times and additional information
     message = ""
     message += u"\U0001F54C"
-    message += f"   *\Daily Prayer Times*   "
+    message += f"   *Daily Prayer Times*   "
     message += u"\U0001F54C"
     message += f"\n\n"
-    message += f"*\Date:* {prayer_date}\n"
-    message += f"*\Hijri:* {hijri_date}\n"
+    message += f"*Date:* {prayer_date}\n"
+    message += f"*Hijri:* {hijri_date}\n"
     message += f"\n"
-    message += f"          *\Subuh:* {subuh_time} AM\n\n"
-    message += f"          *\Syuruk:* {syuruk_time} AM\n\n"
-    message += f"          *\Zohor:* {zohor_time} PM\n\n"
-    message += f"          *\Asar:* {asar_time} PM\n\n"
-    message += f"          *\Maghrib:* {maghrib_time} PM\n\n"
-    message += f"          *\Isyak:* {isyak_time} PM\n\n"
-    message += f"          "
+    message += f"          *Subuh:* {subuh_time} AM\n\n"
+    message += f"          *Syuruk:* {syuruk_time} AM\n\n"
+    message += f"          *Zohor:* {zohor_time} PM\n\n"
+    message += f"          *Asar:* {asar_time} PM\n\n"
+    message += f"          *Maghrib:* {maghrib_time} PM\n\n"
+    message += f"          *Isyak:* {isyak_time} PM\n"
+    message += f"\u00A0 ㅤ"
 
     # Escape special characters like '-' using '\'
-    # message = message.replace('-', r'\-')
-    # message = message.replace('#', r'\#')
+    message = message.replace('-', r'\-')
+    message = message.replace('#', r'\#')
+    message = message.replace('.', r'\.')
     # Send the message with prayer times
     return message
   else:
