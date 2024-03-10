@@ -79,6 +79,7 @@ async def printTimes():
     message += f"          *\Asar:* {asar_time} PM\n\n"
     message += f"          *\Maghrib:* {maghrib_time} PM\n\n"
     message += f"          *\Isyak:* {isyak_time} PM\n\n"
+    message += f"          "
 
     # Escape special characters like '-' using '\'
     # message = message.replace('-', r'\-')
