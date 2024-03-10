@@ -55,7 +55,7 @@ async def set_custom_reminder_sent_false(chat_info):
 
 async def cycleCheck(chat_id_dict):
     #now = datetime.now(sg_timezone)  # Use the Singapore timezone
-    now = datetime.now(offset2HalfBehind)
+    now = datetime.now(sg_timezone)
     print(now)
     
     # Get raw prayer time data
@@ -89,7 +89,7 @@ async def cycleCheck(chat_id_dict):
             microsecond=0
         )
         #prayer_time = sg_timezone.localize(prayer_time)
-        prayer_time = offset2HalfBehind.localize(prayer_time)
+        prayer_time = sg_timezone.localize(prayer_time)
 
         if (prayer == 'Isyak') and prayer_time < now :
             print ("Returning")
@@ -117,7 +117,7 @@ async def cycleCheck(chat_id_dict):
             chat_info['prayer_reminder_sent'] = True
             t = Timer(65, set_prayer_reminder_sent_false, args=(chat_info))
             t.start()
-
+        '''
         # Check if 'custom_duration' key exists in chat_info
         if chat_info['custom_durations']:
             # Trigger the custom reminders based on custom durations
@@ -130,3 +130,4 @@ async def cycleCheck(chat_id_dict):
                     chat_info['custom_reminder_sent'] = True
                     t = Timer(65, set_custom_reminder_sent_false, args=(chat_info, ))
                     t.start()
+        '''
