@@ -200,7 +200,7 @@ print("Bot will now run...")
 async def main():
     print(chat_id_dict)
     await cycleCheck(chat_id_dict)
-    await asyncio.sleep(1)
+    await asyncio.sleep(15)
     await main()
 
 async def run_bot():
