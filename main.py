@@ -68,7 +68,7 @@ async def send_reminder(message):
 @sbot.message_handler(commands=['start'])
 async def start_command(message):
     # Welcome message
-    welcome_message = "Thanks for using my bot!\n\nDo /help for a list of commands\nReminders are ON by default, do /toggle to turn them on\n\nCurrent Version: v0.0.4\nUpdated and Patched as of 29/9/23\nDo /patch to view patchnotes\n\n",
+    welcome_message = "Thanks for using my bot!\n\nDo /help for a list of commands\nReminders are ON by default, do /toggle to turn them on\n\nCurrent Version: v0.0.4\nUpdated and Patched as of 29/9/23\nDo /patch to view patchnotes\n\n"
     welcome_message += "Bot made by L5Z (Faatih) :)"
     checker(message.chat.id)
     await sbot.send_message(message.chat.id, welcome_message)
