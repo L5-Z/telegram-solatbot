@@ -8,8 +8,10 @@ from datetime import datetime, timedelta, timezone
 
 from scrapeAPI import GetPrayerTime, formatTimes, filterInput
 
-global last_prayer
-last_prayer = None
+global upcoming_prayer_time
+upcoming_prayer_time = None
+global change_prayer_time
+change_prayer_time = None
 
 def testprint():
     print("Suspend...")
@@ -24,11 +26,14 @@ TELEGRAM_BOT_TOKEN = bot_key
 sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 
 # Function to send a reminder
-async def send_reminder(chat_id, message):
-    await sbot.reply_to(chat_id, message)
+async def send_reminder(chat_id, prayer, masa):
+    reminder_message = f'\U0001F54B It is now {prayer} ({masa}) \U0001F54B\n\n'
+    reminder_message += "\U0001F932 May your fardh prayer be blessed! \U0001F932"
+    await sbot.send_message(chat_id, reminder_message)
 
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
+offsetHalfBehind = pytz.FixedOffset(-450) # Default 450 for 7h:30mins ahead UTC, behind SG by 30 mins
 offset1Behind = pytz.timezone('Asia/Bangkok')
 offset1HalfBehind = pytz.timezone('Asia/Yangon')
 offset2HalfBehind = pytz.timezone('Asia/Kolkata')
@@ -50,18 +55,13 @@ def convert_to_24_hour_format(time_str):
     except ValueError:
         return time_str  # Return the input unchanged if it's not in the expected format
 
-async def set_prayer_reminder_sent_false(chat_info):
-    chat_info['prayer_reminder_sent'] = False
-
-async def set_custom_reminder_sent_false(chat_info):
-    chat_info['custom_reminder_sent'] = False
-
 async def cycleCheck(chat_id_dict):
-    #now = datetime.now(sg_timezone)  # Use the Singapore timezone
-    now = datetime.now(sg_timezone)
+
+    now = datetime.now(sg_timezone) # Use the Singapore timezone
     print(now)
 
-    global last_prayer
+    global upcoming_prayer_time
+    global change_prayer_time
     
     # Get raw prayer time data
     solatTimesRaw = await GetPrayerTime()
@@ -84,47 +84,61 @@ async def cycleCheck(chat_id_dict):
     print("Done format")
     # Find the nearest upcoming prayer time
     for prayer, masa in solatTimesFormatted.items():
+
         # Convert the masa time to a datetime object
         masa_time = datetime.strptime(masa, '%H:%M')
 
         # Combine the date and time
-        prayer_time = solatDateFormatted.replace(
+        this_prayer_time = solatDateFormatted.replace(
             hour=masa_time.hour,
             minute=masa_time.minute,
             second=0,
             microsecond=0
         )
-        #prayer_time = sg_timezone.localize(prayer_time)
-        prayer_time = sg_timezone.localize(prayer_time)
+        this_prayer_time = sg_timezone.localize(this_prayer_time)
 
-        if (prayer == 'Isyak') and prayer_time < now :
+        upcoming_prayer_time = this_prayer_time
+        upcoming_prayer_name = prayer
+
+        
+        if (prayer == 'Isyak') and now > this_prayer_time + timedelta(minutes=1):
+            for chat_id, chat_info in chat_id_dict.items():
+                chat_info['prayer_reminder_sent'] = False
+                chat_info['custom_reminder_sent'] = False
+                print("Prayer reminders set to false")
             print ("Returning")
             return
 
-        
-        if prayer_time > now : #and (last_prayer_time is None or prayer_time < last_prayer_time):
-            threshold_time = prayer_time
-            last_prayer = prayer_time
-            print("exit on iteration: ", prayer, masa)
-            print(now, "<", prayer_time)
-            print("exit")
+
+        if now <= this_prayer_time + timedelta(minutes=1): #and (last_prayer_time is None or prayer_time < last_prayer_time):
             break
 
     # Define the threshold time as the nearest upcoming prayer time
-    print("Confirmed upcoming: ", threshold_time) 
+    print("Confirmed upcoming: ", upcoming_prayer_name)
+    print("Upcoming time: ", upcoming_prayer_time)
 
     # Iterate through chat_id_dict to check and update values
     for chat_id, chat_info in chat_id_dict.items():
+        print("scanning database")
         # Check and update chat_info values as needed
         # Send reminders when now >= threshold time
-        if chat_info['reminders_enabled'] and now <= threshold_time + timedelta(minutes=1) and not chat_info['prayer_reminder_sent'] and now >= threshold_time:
-            print("filter")
-            reminder_message = f'{prayer} time: {masa}'
-            await send_reminder(chat_id, reminder_message)
+        if chat_info['reminders_enabled'] and now < upcoming_prayer_time + timedelta(minutes=1) and not chat_info['prayer_reminder_sent'] and now >= upcoming_prayer_time:
+            print(upcoming_prayer_time)
+            await send_reminder(chat_id, prayer, masa)
+            print("sent reminder", chat_id)
             chat_info['prayer_reminder_sent'] = True
-            t = Timer(65, set_prayer_reminder_sent_false, args=(chat_info))
-            t.start()
+            change_prayer_time = upcoming_prayer_time
+
+        print("now: ", now," next ", upcoming_prayer_time)
+        # Sets any prayer time to false beforehand, after 1.5mins has elapsed after prayer time to avoid recurring reminders
+        if upcoming_prayer_time != change_prayer_time: #and threshold_time is not None and chat_id is not None and chat_info['prayer_reminder_sent'] and chat_info['custom_reminder_sent']:
+            chat_info['prayer_reminder_sent'] = False
+            chat_info['custom_reminder_sent'] = False
+            print("Prayer reminders set to false")
+
+        
         '''
+        for loop and if conditionals updated. do a new for loop and shift these one tab left when reimplementing
         # Check if 'custom_duration' key exists in chat_info
         if chat_info['custom_durations']:
             # Trigger the custom reminders based on custom durations

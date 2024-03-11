@@ -61,7 +61,7 @@ def checker(chat_id):
 
 # Function to send a reminder
 async def send_reminder(message):
-    await sbot.reply_to(message.chat.id, message)
+    await sbot.send_message(message.chat.id, message)
 
 # /start command handler
 @sbot.message_handler(regexp='start')
@@ -74,9 +74,11 @@ async def start_command(message):
     await sbot.send_message(message.chat.id, welcome_message)
 
 # /echo
-@sbot.message_handler(func=lambda m: re.match(r'^echo$', m.text))
+#@sbot.message_handler(regexp=['echo'])
+@sbot.message_handler(commands=['echo'])
 async def echo_msg(message):
-	await sbot.reply_to(message, message.text)
+    text = message.text.split(' ', 1)[1] # Extract text after the command
+    await sbot.send_message(message.chat.id, text)
 
 # /test command handler
 @sbot.message_handler(regexp='test')
@@ -206,7 +208,7 @@ async def main():
     print(chat_id_dict)
     await cycleCheck(chat_id_dict)
     testprint()
-    await asyncio.sleep(15)
+    await asyncio.sleep(60)
     await main()
 
 async def run_bot():
