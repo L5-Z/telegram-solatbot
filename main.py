@@ -43,7 +43,7 @@ async def announce(message):
         welcome_admin = "Welcome Admin, announcement has been posted"
 
         for chat_id, _ in chat_id_dict.items():
-                if message.chat.id == 51719761:
+                if chat_id == 51719761:
                     await sbot.send_message(chat_id, welcome_admin)
                     continue
                 await sbot.send_message(chat_id, announcement_text)
