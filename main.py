@@ -40,7 +40,8 @@ async def announce(message):
     if message.chat.id == 51719761:
         print("\nAdmin is sending an announcement")
         announcement_text = message.text.split(' ', 1)[1] # Extract text after the command
-        welcome_admin = "Welcome Admin, announcement has been posted"
+        admin_message = "Welcome Admin, the following announcement has been posted:\n"
+        welcome_admin = admin_message + announcement_text
 
         for chat_id, _ in chat_id_dict.items():
                 if chat_id == 51719761:
