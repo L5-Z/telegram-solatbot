@@ -56,7 +56,7 @@ async def announce(message):
     
 # ADMIN FUNCTION (51719761): ADD USER
 @sbot.message_handler(commands=['add'])
-async def announce(message):
+async def addUser(message):
     if message.chat.id == 51719761:
         new_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
         print("\nAdmin is adding user: ", new_chat_id)
@@ -65,7 +65,8 @@ async def announce(message):
 
         checker(new_chat_id)
         
-        print("User: ", notify, " has been added\n")      
+        print("User: ", notify, " has been added\n")
+        await sbot.send_message(chat_id, notify)     
     else:
         return
     
