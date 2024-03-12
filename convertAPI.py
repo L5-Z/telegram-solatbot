@@ -27,8 +27,17 @@ sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 
 # Function to send a reminder
 async def send_reminder(chat_id, prayer, masa):
-    reminder_message = f'\U0001F54B It is now {prayer} ({masa}) \U0001F54B\n\n'
-    reminder_message += "\U0001F932 May your fardh prayer be blessed! \U0001F932"
+    if prayer == "Subuh" or prayer == "Syuruk":
+        reminder_message = f'\U0001F54B It is now {prayer} ({masa} AM) \U0001F54B\n\n'
+    else:
+        reminder_message = f'\U0001F54B It is now {prayer} ({masa} PM) \U0001F54B\n\n'
+
+    if prayer == "Syuruk":
+        reminder_message += "\U0001F1E0 The sun is up! \U0001F1E0"
+    else:
+        reminder_message += "\U0001F932 May your fardh prayer be blessed! \U0001F932"
+    
+    # Send message
     await sbot.send_message(chat_id, reminder_message)
 
 # Set the timezone to Singapore (Asia/Singapore)

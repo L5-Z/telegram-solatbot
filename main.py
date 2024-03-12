@@ -47,7 +47,8 @@ async def announce(message):
                 if chat_id == 51719761:
                     await sbot.send_message(chat_id, welcome_admin)
                     continue
-                await sbot.send_message(chat_id, announcement_text)
+                else:
+                    await sbot.send_message(chat_id, announcement_text)
         
         print("Announcement: ", announcement_text, " has been sent\n")      
     else:
