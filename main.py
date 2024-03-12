@@ -38,11 +38,17 @@ chat_id_dict = {}
 @sbot.message_handler(commands=['announce'])
 async def announce(message):
     if message.chat.id == 51719761:
+        print("\nAdmin is sending an announcement")
         announcement_text = message.text.split(' ', 1)[1] # Extract text after the command
+        welcome_admin = "Welcome Admin, announcement has been posted"
 
-        for chat_id in chat_id_dict.items():
+        for chat_id, _ in chat_id_dict.items():
+                if message.chat.id == 51719761:
+                    await sbot.send_message(chat_id, welcome_admin)
+                    continue
                 await sbot.send_message(chat_id, announcement_text)
-                print("Announcement: ", announcement_text, " has been sent")      
+        
+        print("Announcement: ", announcement_text, " has been sent\n")      
     else:
         return
     
