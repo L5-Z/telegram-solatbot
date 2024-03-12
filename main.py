@@ -34,7 +34,20 @@ custom_durations = [False, False, False, False, False]  # Time for 5, 10, 15, 20
 global chat_id_dict
 chat_id_dict = {}
 
+# ADMIN ANOUNCEMENTS 51719761
+@sbot.message_handler(commands=['announce'])
+async def announce(message):
+    if message.chat.id == 51719761:
+        announcement_text = message.text.split(' ', 1)[1] # Extract text after the command
 
+        for chat_id in chat_id_dict.items():
+                await sbot.send_message(chat_id, announcement_text)
+                print("Announcement: ", announcement_text, " has been sent")      
+    else:
+        return
+    
+
+# Check chat_id if present in dict
 def checker(chat_id):
     global chat_id_dict
     global custom_durations
