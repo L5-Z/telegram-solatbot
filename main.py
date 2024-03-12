@@ -34,7 +34,7 @@ custom_durations = [False, False, False, False, False]  # Time for 5, 10, 15, 20
 global chat_id_dict
 chat_id_dict = {}
 
-# ADMIN ANOUNCEMENTS 51719761
+# ADMIN FUNCTION (51719761): ANOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
 async def announce(message):
     if message.chat.id == 51719761:
@@ -50,6 +50,21 @@ async def announce(message):
                 await sbot.send_message(chat_id, announcement_text)
         
         print("Announcement: ", announcement_text, " has been sent\n")      
+    else:
+        return
+    
+# ADMIN FUNCTION (51719761): ADD USER
+@sbot.message_handler(commands=['add'])
+async def announce(message):
+    if message.chat.id == 51719761:
+        new_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
+        print("\nAdmin is adding user: ", new_chat_id)
+        admin_message = "Welcome Admin, the following user is being added:\n"
+        notify = admin_message + new_chat_id
+
+        checker(new_chat_id)
+        
+        print("User: ", notify, " has been added\n")      
     else:
         return
     
