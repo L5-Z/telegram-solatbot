@@ -66,7 +66,7 @@ async def addUser(message):
         checker(new_chat_id)
         
         print("User: ", notify, " has been added\n")
-        await sbot.send_message(chat_id, notify)     
+        await sbot.send_message(message.chat.id, notify)     
     else:
         return
     
