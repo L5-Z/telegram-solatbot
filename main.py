@@ -9,6 +9,7 @@ import telebot
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
+from storage import *
 from scrapeAPI import printTimes
 from convertAPI import cycleCheck, testprint
 
@@ -201,6 +202,20 @@ async def patch_command(message):
   reply += "\n".join(patch_0_0_4)
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
+
+
+
+# Function to save data before shutdown
+async def save_before_shutdown():
+    global chat_id_dict
+    await save_data(chat_id_dict)
+
+
+# Shutdown function to handle cleanup before exiting
+async def shutdown():
+    await save_before_shutdown()
+    await sbot.stop_polling()
+    print("Bot has been shut down gracefully.")
 
 print("Bot will now run...")
 
