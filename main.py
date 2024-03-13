@@ -21,15 +21,6 @@ TELEGRAM_BOT_TOKEN = bot_key
 # Create a Bot instance with bot token
 sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 
-chat_id = None
-
-# Establish Chat IDs
-
-# Global variable to track whether reminders are enabled or disabled
-reminders_enabled = False
-daily_timings_enabled = False
-custom_durations = [False, False, False, False, False]  # Time for 5, 10, 15, 20, 30
-
 # Initialize a global dictionary to store chat_id information
 global chat_id_dict
 chat_id_dict = {}
@@ -65,7 +56,7 @@ async def addUser(message):
 
         checker(new_chat_id)
         
-        print("User: ", notify, " has been added\n")
+        print("User: ", new_chat_id, " has been added\n")
         await sbot.send_message(message.chat.id, notify)     
     else:
         return
@@ -74,22 +65,18 @@ async def addUser(message):
 # Check chat_id if present in dict
 def checker(chat_id):
     global chat_id_dict
-    global custom_durations
-    global reminders_enabled
-    global daily_timings_enabled
+
+    # Convert chat_id to string to ensure consistency
+    chat_id = str(chat_id)
 
     if chat_id not in chat_id_dict:
         chat_id_dict[chat_id] = {
             'reminders_enabled': True,
             'daily_timings_enabled': False,
-            'custom_durations': [False, False, False, False, False], #Time for 5,10,15,20,30
+            'custom_durations': [False, False, False, False, False], # Time for 5, 10, 15, 20, 30
             'custom_reminder_sent': False,
             'prayer_reminder_sent': False
         }
-    else:
-        reminders_enabled = chat_id_dict[chat_id]['reminders_enabled']
-        daily_timings_enabled = chat_id_dict[chat_id]['daily_timings_enabled']
-        custom_durations = chat_id_dict[chat_id]['custom_durations'].copy()
 
 
 # Command Handlers
