@@ -1,17 +1,13 @@
 import os
 import asyncio
-import re
 import schedule
-import functools
-from datetime import datetime, timedelta, timezone
-from threading import Timer
 import telebot
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
 from storage import *
-from scrapeAPI import printTimes
-from convertAPI import cycleCheck, testprint
+from scrapeAPI import *
+from convertAPI import *
 
 # Bot token
 with open('botKey.txt', 'r') as file:
@@ -203,21 +199,17 @@ async def patch_command(message):
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
 
-
-
-# Function to save data before shutdown
-async def save_before_shutdown():
-    global chat_id_dict
-    await save_data(chat_id_dict)
-
+print("Bot will now run...")
 
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
-    await save_before_shutdown()
-    await sbot.stop_polling()
-    print("Bot has been shut down gracefully.")
 
-print("Bot will now run...")
+    # Save data before shutdown
+    global chat_id_dict
+    await save_data(chat_id_dict)
+
+    await sbot.stop_polling()
+    print("Bot has been shut down.")
 
 async def main():
     print(chat_id_dict)
@@ -227,11 +219,7 @@ async def main():
     await main()
 
 async def run_bot():
-    async def schedule_task():
-        timings_command_instance = functools.partial(timings_command)
-        schedule.every().day.at("04:00").do(lambda: asyncio.run(timings_command_instance))
 
-    await schedule_task()
     await sbot.infinity_polling(interval=1, timeout=0)
 
 if __name__ == '__main__':
@@ -240,5 +228,10 @@ if __name__ == '__main__':
         loop.create_task(run_bot()),
         loop.create_task(main())
     ]
-    loop.run_until_complete(asyncio.wait(tasks))
+    try:
+        loop.run_until_complete(asyncio.wait(tasks))
+    except KeyboardInterrupt:
+        loop.run_until_complete(shutdown())
+    finally:
+        loop.close()
 
