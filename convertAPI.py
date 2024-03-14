@@ -12,9 +12,6 @@ upcoming_prayer_time = None
 global change_prayer_time
 change_prayer_time = None
 
-def testprint():
-    print("Suspend...")
-
 # Bot token
 with open('botKey.txt', 'r') as file:
     bot_key = str(file.read())
@@ -101,7 +98,6 @@ async def cycleCheck(chat_id_dict):
     prayer_date_format = '%d %B %Y'  # Define the format of the date string
     solatDateFormatted = datetime.strptime(prayer_date_str, prayer_date_format)
 
-    print("Done format")
     # Find the nearest upcoming prayer time
     for prayer, masa in solatTimesFormatted.items():
 
@@ -139,7 +135,6 @@ async def cycleCheck(chat_id_dict):
 
     # Iterate through chat_id_dict to check and update values
     for chat_id, chat_info in chat_id_dict.items():
-        print("scanning database")
         # Check and update chat_info values as needed
         # Send reminders when now >= threshold time
         if chat_info['reminders_enabled'] and now < upcoming_prayer_time + timedelta(minutes=1) and not chat_info['prayer_reminder_sent'] and now >= upcoming_prayer_time:
@@ -149,7 +144,6 @@ async def cycleCheck(chat_id_dict):
             chat_info['prayer_reminder_sent'] = True
             change_prayer_time = upcoming_prayer_time
 
-        print("now: ", now," next ", upcoming_prayer_time)
         # Sets any prayer time to false beforehand, after 1.5mins has elapsed after prayer time to avoid recurring reminders
         if upcoming_prayer_time != change_prayer_time: #and threshold_time is not None and chat_id is not None and chat_info['prayer_reminder_sent'] and chat_info['custom_reminder_sent']:
             chat_info['prayer_reminder_sent'] = False
