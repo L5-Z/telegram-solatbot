@@ -1,12 +1,11 @@
 # Converts solat times into 24-hour format in SGT and handles time based events
 import pytz
 import datetime
-import schedule
 from telebot.async_telebot import AsyncTeleBot
 from threading import Timer
 from datetime import datetime, timedelta, timezone
 
-from scrapeAPI import GetPrayerTime, formatTimes, filterInput
+from scrapeAPI import GetPrayerTime, formatTimes, filterInput, printTimes
 
 global upcoming_prayer_time
 upcoming_prayer_time = None
@@ -42,18 +41,30 @@ async def send_reminder(chat_id, prayer, masa):
 
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
-offsetHalfBehind = pytz.FixedOffset(-450) # Default 450 for 7h:30mins ahead UTC, behind SG by 30 mins
+offsetHalfBehind = pytz.FixedOffset(450) # Default 450 for 7h:30mins ahead UTC, behind SG by 30 mins
 offset1Behind = pytz.timezone('Asia/Bangkok')
 offset1HalfBehind = pytz.timezone('Asia/Yangon')
 offset2HalfBehind = pytz.timezone('Asia/Kolkata')
 
-def scheduleRunFeedback():
-    print("Retrieved updated prayer times\n")
-
 # Schedule the scraper to run daily at 4 AM SGT
-async def scheduleRun():
-    schedule.every().day.at("04:00").do(await GetPrayerTime())
-    schedule.every().day.at("04:00").do(scheduleRunFeedback)
+async def scheduleRun(chat_id_dict):
+    # Get the current time
+    now = datetime.now()
+
+    # Set the target time to 4:00 AM
+    target_time = now.replace(hour=5, minute=0, second=0, microsecond=0)
+
+    # Iterate through chat_id_dict to check relevant ids for sending
+    for chat_id, chat_info in chat_id_dict.items():
+        if chat_info['daily_timings_enabled'] and now < target_time + timedelta(minutes=1) and now >= target_time:
+
+            # fetch formatted times
+            times_text = await printTimes()
+
+            # Send message
+            await sbot.send_message(chat_id, times_text)
+
+    print("Scheduled daily has been run\n")
 
 
 # Function to convert 12-hour time to 24-hour time

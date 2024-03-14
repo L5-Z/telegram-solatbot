@@ -178,7 +178,7 @@ async def help_command(message):
   commands = [
       "/toggle - Toggle reminders on or off",
       "/timings - Get current prayer times",
-      "/daily - Toggle daily prayer times (at 4AM) on or off",
+      "/daily - Toggle daily prayer times (at 5AM) notifications on or off",
       "/list - List current slots\n",
       "/customreminder [<index>] <minutes> - Set or edit a custom reminder (0 minutes to disable)\n(e.g. /customreminder 30 creates a new 30 minute pre-reminder while /customreminder 1 45 edits the pre-reminder in Slot 1 to 45 minutes.\nOmitting <index> changes the bot to 'create' mode\nNote: This is the only command with a format)\n",
       "/patch - Lists updates to the bot", 
@@ -236,11 +236,6 @@ async def main():
     await main()
 
 async def run_bot():
-    async def schedule_task():
-        timings_command_instance = functools.partial(timings_command)
-        schedule.every().day.at("04:00").do(lambda: asyncio.run(timings_command_instance))
-
-    await schedule_task()
     await sbot.infinity_polling(interval=1, timeout=0)
 
 if __name__ == '__main__':
