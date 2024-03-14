@@ -1,16 +1,13 @@
 import os
 import asyncio
-import re
 import schedule
-import functools
-from datetime import datetime, timedelta, timezone
-from threading import Timer
 import telebot
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
-from scrapeAPI import printTimes
-from convertAPI import cycleCheck, testprint
+from storage import *
+from scrapeAPI import *
+from convertAPI import *
 
 # Bot token
 with open('botKey.txt', 'r') as file:
@@ -127,25 +124,14 @@ async def timings_command(message):
 @sbot.message_handler(commands=['daily'])
 async def daily_command(message):
     checker(message.chat.id)
-    if chat_id in chat_id_dict:
-        chat_info = chat_id_dict[chat_id]
-        daily_timings_enabled = not chat_info.get('daily_timings_enabled', False)
-        chat_info['daily_timings_enabled'] = daily_timings_enabled
+    chat_info = chat_id_dict[chat_id]
+    daily_timings_enabled = not chat_info.get('daily_timings_enabled', False)
+    chat_info['daily_timings_enabled'] = daily_timings_enabled
 
-        if daily_timings_enabled:
-            # Schedule the /timings command to run daily at a specific time (e.g., 3 AM)
-            schedule.every().day.at("05:00").do(timings_command)
-
-        else:
-            # Clear the scheduled job for /timings if daily timings are disabled
-            schedule.clear("05:00")
-
-        if daily_timings_enabled:
-            await sbot.send_message(message.chat.id, "Daily Times are now enabled.")
-        else:
-            await sbot.send_message(message.chat.id, "Daily Times are now disabled.")
+    if daily_timings_enabled:
+        await sbot.send_message(message.chat.id, "Daily Times are now enabled.")
     else:
-        await sbot.send_message(message.chat.id, "Please use /start to initialize the chat.")
+        await sbot.send_message(message.chat.id, "Daily Times are now disabled.")
 
 
 
@@ -228,6 +214,16 @@ async def patch_command(message):
 
 print("Bot will now run...")
 
+# Shutdown function to handle cleanup before exiting
+async def shutdown():
+
+    # Save data before shutdown
+    global chat_id_dict
+    await save_data(chat_id_dict)
+
+    await sbot.stop_polling()
+    print("Bot has been shut down.")
+
 async def main():
     print(chat_id_dict)
     await cycleCheck(chat_id_dict)
@@ -244,5 +240,10 @@ if __name__ == '__main__':
         loop.create_task(run_bot()),
         loop.create_task(main())
     ]
-    loop.run_until_complete(asyncio.wait(tasks))
+    try:
+        loop.run_until_complete(asyncio.wait(tasks))
+    except KeyboardInterrupt:
+        loop.run_until_complete(shutdown())
+    finally:
+        loop.close()
 
