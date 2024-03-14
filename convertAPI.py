@@ -131,7 +131,7 @@ async def cycleCheck(chat_id_dict):
 
     # Define the threshold time as the nearest upcoming prayer time
     print("Confirmed upcoming: ", upcoming_prayer_name)
-    print("Upcoming time: ", upcoming_prayer_time)
+    print("Now: ", now)
 
     # Iterate through chat_id_dict to check and update values
     for chat_id, chat_info in chat_id_dict.items():
