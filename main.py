@@ -123,7 +123,8 @@ async def timings_command(message):
 @sbot.message_handler(regexp='daily')
 @sbot.message_handler(commands=['daily'])
 async def daily_command(message):
-    checker(message.chat.id)
+    chat_id = message.chat.id
+    checker(chat_id)
     chat_info = chat_id_dict[chat_id]
     daily_timings_enabled = not chat_info.get('daily_timings_enabled', False)
     chat_info['daily_timings_enabled'] = daily_timings_enabled
@@ -141,9 +142,11 @@ async def daily_command(message):
 async def toggle_command(message):
     checker(message.chat.id)
 
+    chat_id = str(message.chat.id)
+
     # Toggle the reminders state
-    if message.chat.id in chat_id_dict:
-        chat_info = chat_id_dict[message.chat.id]
+    if chat_id in chat_id_dict:
+        chat_info = chat_id_dict[chat_id]
         reminders_enabled = not chat_info.get('reminders_enabled', False)
         chat_info['reminders_enabled'] = reminders_enabled
 
@@ -217,17 +220,29 @@ print("Bot will now run...")
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
 
+    # Get all running tasks
+    tasks = [task for task in asyncio.all_tasks() if not task.done()]
+
+    # Cancel all tasks
+    for task in tasks:
+        task.cancel()
+
+    # Wait for all tasks to be cancelled
+    await asyncio.gather(*tasks, return_exceptions=True)
+
     # Save data before shutdown
     global chat_id_dict
     await save_data(chat_id_dict)
 
-    await sbot.stop_polling()
     print("Bot has been shut down.")
 
 async def main():
+    
+    chat_id_dict = await load_data()
     print(chat_id_dict)
+    
     await cycleCheck(chat_id_dict)
-    testprint()
+    print("Suspend...")
     await asyncio.sleep(60)
     await main()
 
@@ -242,7 +257,7 @@ if __name__ == '__main__':
     ]
     try:
         loop.run_until_complete(asyncio.wait(tasks))
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         loop.run_until_complete(shutdown())
     finally:
         loop.close()
