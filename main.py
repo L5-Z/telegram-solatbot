@@ -219,17 +219,6 @@ print("Bot will now run...")
 
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
-
-    # Get all running tasks
-    tasks = [task for task in asyncio.all_tasks() if not task.done()]
-
-    # Cancel all tasks
-    for task in tasks:
-        task.cancel()
-
-    # Wait for all tasks to be cancelled
-    await asyncio.gather(*tasks, return_exceptions=True)
-
     # Save data before shutdown
     global chat_id_dict
     await save_data(chat_id_dict)
@@ -237,10 +226,9 @@ async def shutdown():
     print("Bot has been shut down.")
 
 async def main():
-    
-    chat_id_dict = await load_data()
+
     print(chat_id_dict)
-    
+
     await cycleCheck(chat_id_dict)
     print("Suspend...")
     await asyncio.sleep(60)
@@ -255,10 +243,17 @@ if __name__ == '__main__':
         loop.create_task(run_bot()),
         loop.create_task(main())
     ]
+
     try:
+
         loop.run_until_complete(asyncio.wait(tasks))
-    except (KeyboardInterrupt, SystemExit):
+
+    except KeyboardInterrupt:
+
         loop.run_until_complete(shutdown())
+
     finally:
+
         loop.close()
+
 
