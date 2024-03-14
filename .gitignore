@@ -4,3 +4,6 @@ chat_ids.txt
 *.pyc
 /.pyc/
 /__pycache__/
+
+# Save File
+saveFile.json
