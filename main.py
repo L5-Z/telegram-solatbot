@@ -84,12 +84,12 @@ async def addUser(message):
         print("\nAdmin is dumping user database:\n")
         data_dump = "User ID Dump:\n\n"
 
-        for chat_id, _ in chat_id_dict.items():
+        for chat_id in chat_id_dict:
             data_dump += str(chat_id) + "\n"
             
         
         print("Successfully dumped data\n")
-        await sbot.send_message(message.chat.id, chat_id)     
+        await sbot.send_message(message.chat.id, data_dump)     
     else:
         return
     
