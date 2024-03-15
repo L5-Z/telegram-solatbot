@@ -125,6 +125,7 @@ async def timings_command(message):
 async def daily_command(message):
     chat_id = message.chat.id
     checker(chat_id)
+    
     chat_info = chat_id_dict[chat_id]
     daily_timings_enabled = not chat_info.get('daily_timings_enabled', False)
     chat_info['daily_timings_enabled'] = daily_timings_enabled
@@ -145,17 +146,17 @@ async def toggle_command(message):
     chat_id = str(message.chat.id)
 
     # Toggle the reminders state
-    if chat_id in chat_id_dict:
-        chat_info = chat_id_dict[chat_id]
-        reminders_enabled = not chat_info.get('reminders_enabled', False)
-        chat_info['reminders_enabled'] = reminders_enabled
+    chat_info = chat_id_dict[chat_id]
+    print(chat_info.get('reminders_enabled'))
+    reminders_enabled = not chat_info.get('reminders_enabled', False)
+    print(reminders_enabled)
+    chat_info['reminders_enabled'] = reminders_enabled
 
-        if reminders_enabled:
-            await sbot.send_message(message.chat.id, "Azan reminders are now enabled.")
-        else:
-            await sbot.send_message(message.chat.id, "Azan reminders are now disabled.")
+    if reminders_enabled:
+        await sbot.send_message(message.chat.id, "Azan reminders are now enabled.")
     else:
-        await sbot.send_message(message.chat.id, "Please use /start to initialize the chat.")
+        await sbot.send_message(message.chat.id, "Azan reminders are now disabled.")
+
 
 
 # /help command handler
@@ -238,6 +239,9 @@ async def run_bot():
     await sbot.infinity_polling(interval=1, timeout=0)
 
 if __name__ == '__main__':
+
+    chat_id_dict = load_data()
+
     loop = asyncio.get_event_loop()
     tasks = [
         loop.create_task(run_bot()),
