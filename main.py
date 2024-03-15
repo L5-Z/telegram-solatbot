@@ -26,7 +26,7 @@ chat_id_dict = {}
 # ADMIN FUNCTION (51719761): ANOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
 async def announce(message):
-    if message.chat.id == '51719761':
+    if message.chat.id == 51719761:
         print("\nAdmin is sending an announcement")
         announcement_text = message.text.split(' ', 1)[1] # Extract text after the command
         admin_message = "Welcome Admin, the following announcement has been posted:\n"
@@ -46,7 +46,7 @@ async def announce(message):
 # ADMIN FUNCTION (51719761): ADD USER
 @sbot.message_handler(commands=['add'])
 async def addUser(message):
-    if message.chat.id == '51719761':
+    if message.chat.id == 51719761:
         new_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
         print("\nAdmin is adding user: ", new_chat_id)
         admin_message = "Welcome Admin, the following user is being added:\n"
@@ -55,6 +55,24 @@ async def addUser(message):
         checker(new_chat_id)
         
         print("User: ", new_chat_id, " has been added\n")
+        await sbot.send_message(message.chat.id, notify)     
+    else:
+        return
+
+
+# ADMIN FUNCTION (51719761): REMOVE USER
+@sbot.message_handler(commands=['del'])
+async def addUser(message):
+    if message.chat.id == 51719761:
+        remove_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
+        print("\nAdmin is deleting user: ", remove_chat_id)
+        admin_message = "Welcome Admin, the following user is being deleted:\n"
+        notify = admin_message + remove_chat_id
+
+        if remove_chat_id in chat_id_dict:
+            chat_id_dict.pop(remove_chat_id, None)
+        
+        print("User: ", remove_chat_id, " has been deleted\n")
         await sbot.send_message(message.chat.id, notify)     
     else:
         return
