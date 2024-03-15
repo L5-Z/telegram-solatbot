@@ -23,7 +23,7 @@ sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 global chat_id_dict
 chat_id_dict = {}
 
-# ADMIN FUNCTION (51719761): ANOUNCEMENTS
+# ADMIN FUNCTION (51719761): ANNOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
 async def announce(message):
     if message.chat.id == 51719761:
@@ -74,6 +74,23 @@ async def addUser(message):
         
         print("User: ", remove_chat_id, " has been deleted\n")
         await sbot.send_message(message.chat.id, notify)     
+    else:
+        return
+    
+# ADMIN FUNCTION (51719761): PRINT ALL USER ID
+@sbot.message_handler(commands=['dump'])
+async def addUser(message):
+    if message.chat.id == 51719761:
+        print("\nAdmin is dumping user database: \n\n")
+        data_damp = "User ID Dump:\n"
+
+        for chat_id, _ in chat_id_dict.items():
+            data_damp += chat_id
+            data_damp += "\n"
+            
+        
+        print("Successfully dumped data\n")
+        await sbot.send_message(message.chat.id, chat_id)     
     else:
         return
     
