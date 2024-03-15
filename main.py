@@ -78,12 +78,6 @@ def checker(chat_id):
 
 # Command Handlers
 
-#Basics
-
-# Function to send a reminder
-async def send_reminder(message):
-    await sbot.send_message(message.chat.id, message)
-
 # /start command handler
 @sbot.message_handler(regexp='start')
 @sbot.message_handler(commands=['start'])
