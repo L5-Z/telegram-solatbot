@@ -1,3 +1,4 @@
+import logging
 import os
 import asyncio
 import schedule
@@ -215,8 +216,6 @@ async def patch_command(message):
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
 
-print("Bot will now run...")
-
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
     # Save data before shutdown
@@ -240,6 +239,14 @@ async def run_bot():
 if __name__ == '__main__':
 
     chat_id_dict = load_data()
+    print("User profiles have been loaded")
+
+    # Set up logging
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    logger.info("Logging will begin.")
+
+    print("Bot will now run...")
 
     loop = asyncio.get_event_loop()
     tasks = [
