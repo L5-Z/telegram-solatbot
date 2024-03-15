@@ -69,7 +69,7 @@ def checker(chat_id):
     if chat_id not in chat_id_dict:
         chat_id_dict[chat_id] = {
             'reminders_enabled': True,
-            'daily_timings_enabled': False,
+            'daily_timings_enabled': True,
             'custom_durations': [False, False, False, False, False], # Time for 5, 10, 15, 20, 30
             'custom_reminder_sent': False,
             'prayer_reminder_sent': False
@@ -89,7 +89,8 @@ async def send_reminder(message):
 @sbot.message_handler(commands=['start'])
 async def start_command(message):
     # Welcome message
-    welcome_message = "Thanks for using my bot!\n\nDo /help for a list of commands\nReminders are ON by default, do /toggle to turn them on\n\nCurrent Version: v0.0.4\nUpdated and Patched as of 29/9/23\nDo /patch to view patchnotes\n\n"
+    welcome_message = "Thanks for using my bot!\n\n"
+    welcome_message += "Do /help for a list of commands\nReminders are ON by default, do /toggle to turn them on\n\nCurrent Version: v0.0.4\nUpdated and Patched as of 29/9/23\nDo /patch to view patchnotes\n\n"
     welcome_message += "Bot made by L5Z (Faatih) :)"
     checker(message.chat.id)
     await sbot.send_message(message.chat.id, welcome_message)
@@ -123,17 +124,18 @@ async def timings_command(message):
 @sbot.message_handler(regexp='daily')
 @sbot.message_handler(commands=['daily'])
 async def daily_command(message):
-    chat_id = message.chat.id
-    checker(chat_id)
+    checker(message.chat.id)
+
+    chat_id = str(message.chat.id)
     
     chat_info = chat_id_dict[chat_id]
-    daily_timings_enabled = not chat_info.get('daily_timings_enabled', False)
+    daily_timings_enabled = not chat_info.get('daily_timings_enabled', True)
     chat_info['daily_timings_enabled'] = daily_timings_enabled
 
     if daily_timings_enabled:
-        await sbot.send_message(message.chat.id, "Daily Times are now enabled.")
+        await sbot.send_message(message.chat.id, "Daily Prayer Times are now enabled.")
     else:
-        await sbot.send_message(message.chat.id, "Daily Times are now disabled.")
+        await sbot.send_message(message.chat.id, "Daily Prayer Times are now disabled.")
 
 
 
@@ -147,9 +149,7 @@ async def toggle_command(message):
 
     # Toggle the reminders state
     chat_info = chat_id_dict[chat_id]
-    print(chat_info.get('reminders_enabled'))
-    reminders_enabled = not chat_info.get('reminders_enabled', False)
-    print(reminders_enabled)
+    reminders_enabled = not chat_info.get('reminders_enabled', True)
     chat_info['reminders_enabled'] = reminders_enabled
 
     if reminders_enabled:
