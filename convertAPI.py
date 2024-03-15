@@ -75,7 +75,6 @@ def convert_to_24_hour_format(time_str):
 async def cycleCheck(chat_id_dict):
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
-    print(now)
 
     global upcoming_prayer_time
     global change_prayer_time
@@ -148,7 +147,6 @@ async def cycleCheck(chat_id_dict):
         if upcoming_prayer_time != change_prayer_time: #and threshold_time is not None and chat_id is not None and chat_info['prayer_reminder_sent'] and chat_info['custom_reminder_sent']:
             chat_info['prayer_reminder_sent'] = False
             chat_info['custom_reminder_sent'] = False
-            print("Prayer reminders set to false")
 
         
         '''
