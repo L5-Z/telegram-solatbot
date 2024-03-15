@@ -26,7 +26,7 @@ chat_id_dict = {}
 # ADMIN FUNCTION (51719761): ANOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
 async def announce(message):
-    if message.chat.id == 51719761:
+    if message.chat.id == '51719761':
         print("\nAdmin is sending an announcement")
         announcement_text = message.text.split(' ', 1)[1] # Extract text after the command
         admin_message = "Welcome Admin, the following announcement has been posted:\n"
