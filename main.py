@@ -105,7 +105,7 @@ async def start_command(message):
     welcome_message = "Thanks for using my bot!\n\n"
     welcome_message += "Do /help for a list of commands\n"
     welcome_message += "Reminders are ON by default, do /toggle to turn them on\n"
-    welcome_message += "Daily Prayer Time notifications are ON by default, do /daily to turn them on\n\n"
+    welcome_message += "Daily Prayer Time notifications (at 5AM) are ON by default, do /daily to turn them on\n\n"
     welcome_message += "Current Version: v0.8.0\n"
     welcome_message += "Updated and Patched as of 15/3/23\n"
     welcome_message += "Do /patch to view patchnotes\n\n"

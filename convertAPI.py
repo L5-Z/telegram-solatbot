@@ -43,12 +43,12 @@ offset1Behind = pytz.timezone('Asia/Bangkok')
 offset1HalfBehind = pytz.timezone('Asia/Yangon')
 offset2HalfBehind = pytz.timezone('Asia/Kolkata')
 
-# Schedule the scraper to run daily at 4 AM SGT
+# Schedule the scraper to run daily at 5 AM SGT
 async def scheduleRun(chat_id_dict):
     # Get the current time
     now = datetime.now()
 
-    # Set the target time to 4:00 AM
+    # Set the target time to 5:00 AM
     target_time = now.replace(hour=5, minute=0, second=0, microsecond=0)
 
     # Iterate through chat_id_dict to check relevant ids for sending
@@ -120,7 +120,6 @@ async def cycleCheck(chat_id_dict):
             for chat_id, chat_info in chat_id_dict.items():
                 chat_info['prayer_reminder_sent'] = False
                 chat_info['custom_reminder_sent'] = False
-                print("Prayer reminders set to false")
             print ("Returning")
             return
 
@@ -137,7 +136,6 @@ async def cycleCheck(chat_id_dict):
         # Check and update chat_info values as needed
         # Send reminders when now >= threshold time
         if chat_info['reminders_enabled'] and now < upcoming_prayer_time + timedelta(minutes=1) and not chat_info['prayer_reminder_sent'] and now >= upcoming_prayer_time:
-            print(upcoming_prayer_time)
             await send_reminder(chat_id, prayer, masa)
             print("sent reminder", chat_id)
             chat_info['prayer_reminder_sent'] = True
