@@ -216,6 +216,19 @@ async def patch_command(message):
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
 
+# Check for blocked users
+def check_for_blocked_users(chat_id_dict):
+    blocked_users = []
+    for chat_id in chat_id_dict:
+        try:
+            # Send a dummy message to check if the bot is blocked
+            bot.send_chat_action(chat_id=chat_id, action='typing')
+        except telebot.apihelper.ApiException as e:
+            if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
+                logger.warning(f"Bot was blocked by user {chat_id}")
+                blocked_users.append(chat_id)
+    return blocked_users
+
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
     # Save data before shutdown
@@ -245,6 +258,20 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     logger.info("Logging will begin.")
+
+    # Remove blocked users from chat_id_dict or take other appropriate action
+    blocked_users = check_for_blocked_users(chat_id_dict)
+    if blocked_users:
+        # Notify of blocked users
+        logger.info(f"Bot was blocked by the following users: {', '.join(map(str, blocked_users))}")
+        
+        # Remove blocked users from database
+        for blocked_user in blocked_users:
+            chat_id_dict.pop(blocked_user, None)
+        logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+
+    else:
+        logger.info("No users have blocked the bot. Proceeding...")
 
     print("Bot will now run...")
 
