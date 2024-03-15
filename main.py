@@ -81,12 +81,11 @@ async def addUser(message):
 @sbot.message_handler(commands=['dump'])
 async def addUser(message):
     if message.chat.id == 51719761:
-        print("\nAdmin is dumping user database: \n\n")
-        data_damp = "User ID Dump:\n"
+        print("\nAdmin is dumping user database:\n")
+        data_dump = "User ID Dump:\n\n"
 
         for chat_id, _ in chat_id_dict.items():
-            data_damp += chat_id
-            data_damp += "\n"
+            data_dump += str(chat_id) + "\n"
             
         
         print("Successfully dumped data\n")
