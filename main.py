@@ -33,7 +33,7 @@ async def announce(message):
         welcome_admin = admin_message + announcement_text
 
         for chat_id, _ in chat_id_dict.items():
-                if chat_id == 51719761:
+                if chat_id == '51719761':
                     await sbot.send_message(chat_id, welcome_admin)
                     continue
                 else:
@@ -46,7 +46,7 @@ async def announce(message):
 # ADMIN FUNCTION (51719761): ADD USER
 @sbot.message_handler(commands=['add'])
 async def addUser(message):
-    if message.chat.id == 51719761:
+    if message.chat.id == '51719761':
         new_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
         print("\nAdmin is adding user: ", new_chat_id)
         admin_message = "Welcome Admin, the following user is being added:\n"
@@ -222,7 +222,7 @@ def check_for_blocked_users(chat_id_dict):
     for chat_id in chat_id_dict:
         try:
             # Send a dummy message to check if the bot is blocked
-            bot.send_chat_action(chat_id=chat_id, action='typing')
+            sbot.send_chat_action(chat_id=chat_id, action='typing')
         except telebot.apihelper.ApiException as e:
             if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
                 logger.warning(f"Bot was blocked by user {chat_id}")
