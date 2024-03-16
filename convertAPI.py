@@ -23,22 +23,26 @@ sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 
 # Function to send a reminder
 async def send_reminder(chat_id, prayer, masa):
-    if prayer == "Subuh" or prayer == "Syuruk":
-        reminder_message = f'\U0001F54B It is now {prayer} ({masa} AM) \U0001F54B\n\n'
-    else:
-        reminder_message = f'\U0001F54B It is now {prayer} ({masa} PM) \U0001F54B\n\n'
+    try:
+        dt = datetime.strptime(masa, '%H:%M')
+        masa = dt.strftime('%I:%M %p')
+    except ValueError:
+        print("ValueError converting masa to 12H") # Return the input unchanged if it's not in the expected format
+    finally:
+        reminder_message = f'\U0001F54B It is now *{prayer} ({masa})* \U0001F54B\n\n'
 
-    if prayer == "Syuruk":
-        reminder_message += "\U0001F1E0 The sun is up! \U0001F1E0"
-    else:
-        reminder_message += "\U0001F932 May your fardh prayer be blessed! \U0001F932"
-    
-    # Send message
-    await sbot.send_message(chat_id, reminder_message)
+        if prayer == "Syuruk":
+            reminder_message += "\U0001F305 The sun is up! \U0001F305"
+        else:
+            reminder_message += "\U0001F932 May your fardh prayer be blessed! \U0001F932"
+
+        # Send message
+        await sbot.send_message(chat_id, reminder_message, 'Markdown')
+
 
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
-offsetHalfBehind = pytz.FixedOffset(450) # Default 450 for 7h:30mins ahead UTC, behind SG by 30 mins
+offsetHalfBehind = pytz.FixedOffset(837) # Default 450 for 7h:30mins ahead UTC, behind SG by 30 mins
 offset1Behind = pytz.timezone('Asia/Bangkok')
 offset1HalfBehind = pytz.timezone('Asia/Yangon')
 offset2HalfBehind = pytz.timezone('Asia/Kolkata')
@@ -54,7 +58,7 @@ async def scheduleRun(chat_id_dict):
             times_text = await printTimes()
 
             # Send message
-            await sbot.send_message(chat_id, times_text)
+            await sbot.send_message(chat_id, times_text, 'MarkdownV2')
 
     print("Scheduled daily has been run\n")
 
