@@ -45,15 +45,10 @@ offset2HalfBehind = pytz.timezone('Asia/Kolkata')
 
 # Schedule the scraper to run daily at 5 AM SGT
 async def scheduleRun(chat_id_dict):
-    # Get the current time
-    now = datetime.now()
-
-    # Set the target time to 5:00 AM
-    target_time = now.replace(hour=5, minute=0, second=0, microsecond=0)
 
     # Iterate through chat_id_dict to check relevant ids for sending
     for chat_id, chat_info in chat_id_dict.items():
-        if chat_info['daily_timings_enabled'] and now < target_time + timedelta(minutes=1) and now >= target_time:
+        if chat_info['daily_timings_enabled']:
 
             # fetch formatted times
             times_text = await printTimes()
@@ -81,6 +76,13 @@ async def cycleCheck(chat_id_dict):
     
     # Get raw prayer time data
     solatTimesRaw = await GetPrayerTime()
+
+    # /daily command
+    # Set the target time to 5:00 AM
+    AM_5 = now.replace(hour=5, minute=0, second=0, microsecond=0)
+    if now < AM_5 + timedelta(minutes=1) and now >= AM_5:
+        await scheduleRun(chat_id_dict)
+
 
     # Filter data
     filtered_data = filterInput(solatTimesRaw)
