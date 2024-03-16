@@ -93,6 +93,20 @@ async def addUser(message):
     else:
         return
     
+# ADMIN FUNCTION (51719761): PRINT ALL USER ID
+@sbot.message_handler(commands=['peek'])
+async def addUser(message):
+    if message.chat.id == 51719761:
+        print("\nAdmin is viewing user database:\n")
+
+        data_dump = "User Settings:\n\n"
+        data_dump += str(chat_id_dict) + "\n"
+            
+        print("Successfully output data\n")
+        await sbot.send_message(message.chat.id, data_dump)     
+    else:
+        return
+    
 
 # Check chat_id if present in dict
 def checker(chat_id):
@@ -272,9 +286,7 @@ async def shutdown():
     print("Bot has been shut down.")
 
 async def main():
-
-    print(chat_id_dict)
-
+    
     await cycleCheck(chat_id_dict)
     print("Suspend...")
     await asyncio.sleep(60)
