@@ -74,6 +74,7 @@ def convert_to_24_hour_format(time_str):
 async def cycleCheck(chat_id_dict):
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
+    new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
 
     global upcoming_prayer_time
     global change_prayer_time
@@ -85,6 +86,7 @@ async def cycleCheck(chat_id_dict):
     # Set the target time to 5:00 AM
     AM_5 = now.replace(hour=5, minute=0, second=0, microsecond=0)
     if now < AM_5 + timedelta(minutes=1) and now >= AM_5:
+        print("Standby Daily Send\n", now)
         await scheduleRun(chat_id_dict)
 
 
@@ -121,16 +123,16 @@ async def cycleCheck(chat_id_dict):
         upcoming_prayer_time = this_prayer_time
         upcoming_prayer_name = prayer
 
-        
-        if (prayer == 'Isyak') and now > this_prayer_time + timedelta(minutes=1):
+        # Reduce CPU Load, fast return
+        if (prayer == 'Isyak') and now > this_prayer_time + timedelta(minutes=1) and now <= new_day:
             for chat_id, chat_info in chat_id_dict.items():
                 chat_info['prayer_reminder_sent'] = False
                 chat_info['custom_reminder_sent'] = False
-            print ("Returning")
+            print ("Returning: ", now)
             return
 
 
-        if now <= this_prayer_time + timedelta(minutes=1): #and (last_prayer_time is None or prayer_time < last_prayer_time):
+        if now <= this_prayer_time + timedelta(minutes=1):
             break
 
     # Define the threshold time as the nearest upcoming prayer time
