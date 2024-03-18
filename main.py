@@ -143,20 +143,21 @@ async def start_command(message):
     checker(message.chat.id)
     await sbot.send_message(message.chat.id, welcome_message)
 
-# /echo
-#@sbot.message_handler(regexp=['echo'])
-@sbot.message_handler(commands=['echo'])
-async def echo_msg(message):
-    text = message.text.split(' ', 1)[1] # Extract text after the command
-    await sbot.send_message(message.chat.id, text)
+# /settings command handler
+@sbot.message_handler(regexp='settings')
+@sbot.message_handler(commands=['settings'])
+async def settings_command(message):
+    checker(message.chat.id)
+    
+    chat_id = str(message.chat.id)
+    chat_info = chat_id_dict[chat_id]
 
-# /test command handler
-@sbot.message_handler(regexp='test')
-@sbot.message_handler(commands=['test'])
-async def test_command(message):
-    # Execute your test logic here
-    await sbot.send_message(message.chat.id, "Test command has been run. Bot is up and running.\n Use '/help' for command list")
+    reply = "_Current Settings:_\n\n"
+    reply += f"*Reminders Enabled:* {chat_info['reminders_enabled']}\n"
+    reply += f"*Daily Timings Enabled:* {chat_info['daily_timings_enabled']}\n\n"
 
+    # Send the message with prayer times
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
 # /timings command handler
 @sbot.message_handler(regexp='timings')
