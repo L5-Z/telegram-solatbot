@@ -36,8 +36,9 @@ def load_data():
     try:
         with open(DATA_FILE, "r") as file:
             data = json.load(file)
+            logger.info("Data loaded successfully from JSON file")
     except FileNotFoundError:
-        print("FileNotFoundError")
+        logger.warning("JSON file not found. Creating a new file")
         data = {}
         new_json(data)  # Create a new file
 
@@ -48,10 +49,18 @@ def load_data():
 
 # Function to create new JSON file to save data
 def new_json(data):
-    with open(DATA_FILE, "w") as file:
-        json.dump(data, file)
+    try:
+        with open(DATA_FILE, "w") as file:
+            json.dump(data, file)
+            logger.info("Successfully created JSON file")
+    except Exception as e:
+        logger.error(f"Error creating JSON file: {e}")
 
 # Function to save data to the JSON file
 async def save_data(data):
-    with open(DATA_FILE, "w") as file:
-        json.dump(data, file)
+    try:
+        with open(DATA_FILE, "w") as file:
+            json.dump(data, file)
+            logger.info("Data saved successfully to JSON file")
+    except Exception as e:
+        logger.error(f"Error saving data to JSON file: {e}")
