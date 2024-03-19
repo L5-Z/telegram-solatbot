@@ -1,10 +1,8 @@
 import logging
-import os
 import asyncio
-import schedule
 import telebot
 from telebot.async_telebot import AsyncTeleBot
-from telebot.types import Message
+from telebot.types import *
 
 from storage import *
 from scrapeAPI import *

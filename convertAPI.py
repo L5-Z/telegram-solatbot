@@ -2,10 +2,9 @@
 import pytz
 import datetime
 from telebot.async_telebot import AsyncTeleBot
-from threading import Timer
-from datetime import datetime, timedelta, timezone
+from datetime import *
 
-from scrapeAPI import GetPrayerTime, formatTimes, filterInput, printTimes
+from scrapeAPI import *
 
 global upcoming_prayer_time
 upcoming_prayer_time = None
