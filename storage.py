@@ -1,5 +1,4 @@
 import json
-import os
 
 # File path to store the dictionary data
 DATA_FILE = "saveFile.json"
@@ -37,12 +36,17 @@ def load_data():
     except FileNotFoundError:
         print("FileNotFoundError")
         data = {}
-        save_data(data)  # Create a new file
+        new_json(data)  # Create a new file
 
     # Convert string values of "True" and "False" to booleans
     data = convert_values(data)
 
     return data
+
+# Function to create new JSON file to save data
+def new_json(data):
+    with open(DATA_FILE, "w") as file:
+        json.dump(data, file)
 
 # Function to save data to the JSON file
 async def save_data(data):
