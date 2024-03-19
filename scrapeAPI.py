@@ -11,19 +11,20 @@ logger = logging.getLogger(__name__)
 async def GetPrayerTime():
   url = f'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime?v=${str(int(time.time()))}'
   try:
-      response = requests.get(url, headers={'Cache-Control': 'no-cache'})
-      if response.status_code == 200:
-          data = response.json()
-          return data
-      else:
-          print(f"Failed to retrieve data. Status code: {response.status_code}")
-          return None
+    response = requests.get(url, headers={'Cache-Control': 'no-cache'})
+    if response.status_code == 200:
+      data = response.json()
+      logger.info('Successfully retrieved prayer times')
+      return data
+    else:
+      logger.error(f"Failed to retrieve data. Status code: {response.status_code}")
+      return None
   except requests.exceptions.RequestException as e:
-      print(f"Error: {e}")
-      return None
+    logger.error(f"Error: {e}")
+    return None
   except json.JSONDecodeError as e:
-      print(f"Error decoding JSON: {e}")
-      return None
+    logger.error(f"Error decoding JSON: {e}")
+    return None
     
 # Function to manually add AM/PM based on prayer type
 def formatTimes(input_dict):
@@ -46,7 +47,7 @@ def filterInput(input_dict):
 
     return [input_dict, date_dict]
   else:
-    print("Failed to filter data.")
+    logger.warning("Failed to filter data.")
     return None
 
 # Prints the timings
@@ -87,10 +88,13 @@ async def printTimes():
     message = message.replace('-', r'\-')
     message = message.replace('#', r'\#')
     message = message.replace('.', r'\.')
+
+    logger.info("Successfully formatted prayer times")
+
     # Send the message with prayer times
     return message
   else:
-    message = "Failed to retrieve prayer times."
-    return message
+    logger.error("Failed to retrieve prayer times.")
+    return "Failed to retrieve prayer times."
 
 
