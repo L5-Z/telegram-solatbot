@@ -285,13 +285,19 @@ async def shutdown():
     print("Bot has been shut down.")
 
 async def main():
-    print("Executing...")
-    await cycleCheck(chat_id_dict)
-    print("Suspend...")
-    await asyncio.sleep(60)
-    await main()
+    try:
+        logger.info("Starting the main function...")
+        print("Executing...")
+        logger.info("Initialising cycleCheck in main now")
+        await cycleCheck(chat_id_dict)
+        logger.info("Suspending now")
+        print("Suspend...")
+        await asyncio.sleep(60)
+        await main()
+    except Exception as e:
+        logger.error(f"An error occurred in the main function: {e}")
 
-async def run_bot():
+async def poll():
     await sbot.infinity_polling()
 
 if __name__ == '__main__':
@@ -328,7 +334,7 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     tasks = [
-        loop.create_task(run_bot()),
+        loop.create_task(poll()),
         loop.create_task(main())
     ]
 
