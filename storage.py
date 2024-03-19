@@ -1,4 +1,7 @@
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 # File path to store the dictionary data
 DATA_FILE = "saveFile.json"

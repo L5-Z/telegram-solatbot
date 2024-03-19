@@ -3,6 +3,9 @@ import requests
 import json
 import time
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Function to scrape prayer times from the website
 async def GetPrayerTime():

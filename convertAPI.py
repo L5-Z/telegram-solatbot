@@ -1,10 +1,13 @@
 # Converts solat times into 24-hour format in SGT and handles time based events
 import pytz
 import datetime
+import logging
 from telebot.async_telebot import AsyncTeleBot
 from datetime import *
 
 from scrapeAPI import *
+
+logger = logging.getLogger(__name__)
 
 global upcoming_prayer_time
 upcoming_prayer_time = None
