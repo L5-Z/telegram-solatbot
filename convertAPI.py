@@ -2,6 +2,7 @@
 import pytz
 import datetime
 import logging
+
 from telebot.async_telebot import AsyncTeleBot
 from datetime import *
 
@@ -23,13 +24,17 @@ TELEGRAM_BOT_TOKEN = bot_key
 # Create a Bot instance with bot token
 sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 
+# Set the timezone to Singapore (Asia/Singapore)
+sg_timezone = pytz.timezone('Asia/Singapore')
+custom_timezone = pytz.FixedOffset(450) # Default 450 for 7h:30mins ahead UTC, behind SG by 30 mins
+
 # Function to send a reminder
 async def send_reminder(chat_id, prayer, masa):
     try:
         dt = datetime.strptime(masa, '%H:%M')
         masa = dt.strftime('%I:%M %p')
-    except ValueError:
-        print("ValueError converting masa to 12H") # Return the input unchanged if it's not in the expected format
+    except ValueError as e:
+        logger.error(f"ValueError converting masa to 12H, send_reminder: {e}")
     finally:
         reminder_message = f'\U0001F54B It is now *{prayer} ({masa})* \U0001F54B\n\n'
 
@@ -41,13 +46,6 @@ async def send_reminder(chat_id, prayer, masa):
         # Send message
         await sbot.send_message(chat_id, reminder_message, 'Markdown')
 
-
-# Set the timezone to Singapore (Asia/Singapore)
-sg_timezone = pytz.timezone('Asia/Singapore')
-offsetHalfBehind = pytz.FixedOffset(837) # Default 450 for 7h:30mins ahead UTC, behind SG by 30 mins
-offset1Behind = pytz.timezone('Asia/Bangkok')
-offset1HalfBehind = pytz.timezone('Asia/Yangon')
-offset2HalfBehind = pytz.timezone('Asia/Kolkata')
 
 # Schedule the scraper to run daily at 5 AM SGT
 async def scheduleRun(chat_id_dict):
@@ -70,10 +68,12 @@ def convert_to_24_hour_format(time_str):
     try:
         dt = datetime.strptime(time_str, '%I:%M %p')
         return dt.strftime('%H:%M')
-    except ValueError:
+    except ValueError as e:
+        logger.error(f"Error converting time to 24H format: {e}")
         return time_str  # Return the input unchanged if it's not in the expected format
 
 async def cycleCheck(chat_id_dict):
+    logger.info("Cycle check started")
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
@@ -83,17 +83,23 @@ async def cycleCheck(chat_id_dict):
     
     # Get raw prayer time data
     solatTimesRaw = await GetPrayerTime()
+    if solatTimesRaw is None:
+        logger.error("Failed to retrieve prayer times from MUIS")
+        return
 
     # /daily command
     # Set the target time to 5:00 AM
     AM_5 = now.replace(hour=5, minute=0, second=0, microsecond=0)
     if now < AM_5 + timedelta(minutes=1) and now >= AM_5:
-        print("Standby Daily Send\n", now)
+        logger.info("Sending daily prayer times at 5:00 AM")
         await scheduleRun(chat_id_dict)
 
 
     # Filter data
     filtered_data = filterInput(solatTimesRaw)
+    if filtered_data is None:
+        logger.error("Failed to filter prayer time data in filtered_data")
+        return
     solatTimes = filtered_data[0] # Only prayer times
     dateCalendar = filtered_data[1] # Only dates Islamic, Roman
 
@@ -105,13 +111,21 @@ async def cycleCheck(chat_id_dict):
     # Extract the date value and convert it to a datetime object
     prayer_date_str = dateCalendar.get('PrayerDate', '')  # Use the calendar dictionary here
     prayer_date_format = '%d %B %Y'  # Define the format of the date string
-    solatDateFormatted = datetime.strptime(prayer_date_str, prayer_date_format)
-
+    try:
+        solatDateFormatted = datetime.strptime(prayer_date_str, prayer_date_format)
+    except ValueError:
+        logger.error(f"Invalid date format, prayer_date_str: {prayer_date_str}")
+        return
+    
     # Find the nearest upcoming prayer time
     for prayer, masa in solatTimesFormatted.items():
 
-        # Convert the masa time to a datetime object
-        masa_time = datetime.strptime(masa, '%H:%M')
+        try:
+            # Convert the masa time to a datetime object
+            masa_time = datetime.strptime(masa, '%H:%M')
+        except ValueError:
+            logger.warning(f"Invalid time format, masa: {masa}")
+            continue
 
         # Combine the date and time
         this_prayer_time = solatDateFormatted.replace(
@@ -130,6 +144,7 @@ async def cycleCheck(chat_id_dict):
             for chat_id, chat_info in chat_id_dict.items():
                 chat_info['prayer_reminder_sent'] = False
                 chat_info['custom_reminder_sent'] = False
+            logger.info("Returning after Isyak prayer time")
             print ("Returning: ", now)
             return
 
@@ -138,6 +153,8 @@ async def cycleCheck(chat_id_dict):
             break
 
     # Define the threshold time as the nearest upcoming prayer time
+    logger.info(f"Confirmed upcoming prayer: {upcoming_prayer_name}")
+    logger.info(f"Current time: {now}")
     print("Confirmed upcoming: ", upcoming_prayer_name)
     print("Now: ", now)
 
@@ -146,6 +163,7 @@ async def cycleCheck(chat_id_dict):
         # Check and update chat_info values as needed
         # Send reminders when now >= threshold time
         if chat_info['reminders_enabled'] and now < upcoming_prayer_time + timedelta(minutes=1) and not chat_info['prayer_reminder_sent'] and now >= upcoming_prayer_time:
+            logger.info(f"Sent reminder to {chat_id} for {upcoming_prayer_name} prayer")
             await send_reminder(chat_id, prayer, masa)
             print("sent reminder", chat_id)
             chat_info['prayer_reminder_sent'] = True
@@ -156,8 +174,9 @@ async def cycleCheck(chat_id_dict):
             chat_info['prayer_reminder_sent'] = False
             chat_info['custom_reminder_sent'] = False
 
-        
-        '''
+    logger.info("Cycle check completed")
+
+    '''
         for loop and if conditionals updated. do a new for loop and shift these one tab left when reimplementing
         # Check if 'custom_duration' key exists in chat_info
         if chat_info['custom_durations']:
@@ -171,4 +190,4 @@ async def cycleCheck(chat_id_dict):
                     chat_info['custom_reminder_sent'] = True
                     t = Timer(65, set_custom_reminder_sent_false, args=(chat_info, ))
                     t.start()
-        '''
+    '''
