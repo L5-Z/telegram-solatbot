@@ -285,14 +285,14 @@ async def shutdown():
     print("Bot has been shut down.")
 
 async def main():
-    
+    print("Executing...")
     await cycleCheck(chat_id_dict)
     print("Suspend...")
     await asyncio.sleep(60)
     await main()
 
 async def run_bot():
-    await sbot.infinity_polling(interval=1, timeout=0)
+    await sbot.infinity_polling()
 
 if __name__ == '__main__':
 
