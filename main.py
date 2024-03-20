@@ -285,37 +285,37 @@ async def shutdown():
     print("Bot has been shut down.")
 
 async def main():
-    try:
-        logger.info("Starting the main function...")
-        print("Executing cycle:")
-        
-        logger.info("Starting the main function...")
-        print("Block Check...")
-        # Remove blocked users from chat_id_dict or take other appropriate action
-        blocked_users = await check_for_blocked_users(chat_id_dict)
-        if blocked_users:
-            # Notify of blocked users
-            logger.info(f"Bot was blocked by the following users: {', '.join(map(str, blocked_users))}")
-        
-            # Remove blocked users from database
-            for blocked_user in blocked_users:
-                chat_id_dict.pop(blocked_user, None)
-                print("Removed blocker: ", blocked_user)
-                logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+    while(True):
+        try:
+            logger.info("Starting the main function...")
+            print("Executing cycle:")
+            
+            logger.info("Starting the main function...")
+            print("Block Check...")
+            # Remove blocked users from chat_id_dict or take other appropriate action
+            blocked_users = await check_for_blocked_users(chat_id_dict)
+            if blocked_users:
+                # Notify of blocked users
+                logger.info(f"Bot was blocked by the following users: {', '.join(map(str, blocked_users))}")
+            
+                # Remove blocked users from database
+                for blocked_user in blocked_users:
+                    chat_id_dict.pop(blocked_user, None)
+                    print("Removed blocker: ", blocked_user)
+                    logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
 
-        else:
-            logger.info("No users have blocked the bot. Proceeding...")
-            print("No blocks")
+            else:
+                logger.info("No users have blocked the bot. Proceeding...")
+                print("No blocks")
 
-        logger.info("Initialising cycleCheck in main now")
-        print("Begin...")
-        await cycleCheck(chat_id_dict)
-        logger.info("Suspending now")
-        print("Suspend")
-        await asyncio.sleep(60)
-        await main()
-    except Exception as e:
-        logger.error(f"An error occurred in the main function: {e}")
+            logger.info("Initialising cycleCheck in main now")
+            print("Begin...")
+            await cycleCheck(chat_id_dict)
+            logger.info("Suspending now")
+            print("Suspend")
+            await asyncio.sleep(60)
+        except Exception as e:
+            logger.error(f"An error occurred in the main function: {e}")
 
 async def poll():
     await sbot.infinity_polling()
