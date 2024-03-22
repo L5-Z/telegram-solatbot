@@ -105,6 +105,26 @@ async def addUser(message):
     else:
         return
     
+# ADMIN FUNCTION (51719761): UPDATE DATABASE
+@sbot.message_handler(commands=['updatedb'])
+async def announce(message):
+    if message.chat.id == 51719761:
+        print("\nAdmin is updating database")
+        admin_message = "Welcome Admin, the database has been updated.\n"
+
+        for chat_id, chat_data in chat_id_dict.items():
+            new_chat_data = {
+            'reminders_enabled': chat_data.get('reminders_enabled', True),
+            'daily_timings_enabled': chat_data.get('daily_timings_enabled', True),
+            'custom_durations': chat_data.get('custom_durations', [False, False, False, False, False]),
+            }
+            chat_id_dict[chat_id] = new_chat_data
+        
+        await sbot.send_message(message.chat.id, admin_message)  
+        print("The database has been updated.\n")      
+    else:
+        return
+    
 
 # Check chat_id if present in dict
 def checker(chat_id):
