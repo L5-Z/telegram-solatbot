@@ -141,9 +141,6 @@ async def cycleCheck(chat_id_dict):
 
         # Reduce CPU Load, fast return
         if (prayer == 'Isyak') and now > this_prayer_time + timedelta(minutes=1) and now <= new_day:
-            for chat_id, chat_info in chat_id_dict.items():
-                chat_info['prayer_reminder_sent'] = False
-                chat_info['custom_reminder_sent'] = False
             logger.info("Returning after Isyak prayer time")
             print ("Returning: ", now)
             return
@@ -158,21 +155,16 @@ async def cycleCheck(chat_id_dict):
     print("Confirmed upcoming: ", upcoming_prayer_name)
     print("Now: ", now)
 
-    # Iterate through chat_id_dict to check and update values
-    for chat_id, chat_info in chat_id_dict.items():
-        # Check and update chat_info values as needed
-        # Send reminders when now >= threshold time
-        if chat_info['reminders_enabled'] and now < upcoming_prayer_time + timedelta(minutes=1) and not chat_info['prayer_reminder_sent'] and now >= upcoming_prayer_time:
-            logger.info(f"Sent reminder to {chat_id} for {upcoming_prayer_name} prayer")
-            await send_reminder(chat_id, prayer, masa)
-            print("sent reminder", chat_id)
-            chat_info['prayer_reminder_sent'] = True
-            change_prayer_time = upcoming_prayer_time
-
-        # Sets any prayer time to false beforehand, after 1.5mins has elapsed after prayer time to avoid recurring reminders
-        if upcoming_prayer_time != change_prayer_time: #and threshold_time is not None and chat_id is not None and chat_info['prayer_reminder_sent'] and chat_info['custom_reminder_sent']:
-            chat_info['prayer_reminder_sent'] = False
-            chat_info['custom_reminder_sent'] = False
+    # If time is within 1 minute after azan
+    if now < upcoming_prayer_time + timedelta(minutes=1) and now >= upcoming_prayer_time:
+        # Iterate through chat_id_dict to send reminders
+        for chat_id, chat_info in chat_id_dict.items():
+            # Send reminders if enabled
+            if chat_info['reminders_enabled']:
+                logger.info(f"Sent reminder to {chat_id} for {upcoming_prayer_name} prayer")
+                await send_reminder(chat_id, prayer, masa)
+                print("sent reminder", chat_id)
+                change_prayer_time = upcoming_prayer_time
 
     logger.info("Cycle check completed")
 
