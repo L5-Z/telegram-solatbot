@@ -339,10 +339,8 @@ async def main():
     while(True):
         try:
             logger.info("Starting the main function...")
-            print("Executing cycle:")
             
             logger.info("Initialising cycleCheck in main now")
-            print("Begin...")
             await cycleCheck(chat_id_dict)
             logger.info("Suspending now")
             print("Suspend")
@@ -367,9 +365,7 @@ if __name__ == '__main__':
     )
     # Get the logger instance
     logger = logging.getLogger(__name__)
-    logger.info("Logging will begin.")
-
-    print("Bot will now run...")
+    logger.info("Logging begin.")
 
     loop = asyncio.get_event_loop()
     tasks = [
