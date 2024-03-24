@@ -7,6 +7,7 @@ from telebot.async_telebot import AsyncTeleBot
 from datetime import *
 
 from scrapeAPI import *
+from blocked import *
 
 logger = logging.getLogger(__name__)
 
@@ -155,16 +156,31 @@ async def cycleCheck(chat_id_dict):
     print("Confirmed upcoming: ", upcoming_prayer_name)
     print("Now: ", now)
 
+        
     # If time is within 1 minute after azan
     if now < upcoming_prayer_time + timedelta(minutes=1) and now >= upcoming_prayer_time:
         # Iterate through chat_id_dict to send reminders
         for chat_id, chat_info in chat_id_dict.items():
             # Send reminders if enabled
             if chat_info['reminders_enabled']:
-                logger.info(f"Sent reminder to {chat_id} for {upcoming_prayer_name} prayer")
-                await send_reminder(chat_id, prayer, masa)
-                print("sent reminder", chat_id)
-                change_prayer_time = upcoming_prayer_time
+                try:
+                    # Try to send the reminder to check if the bot is blocked
+                    await send_reminder(chat_id, prayer, masa)
+                    logger.info(f"Sent reminder to {chat_id} for {upcoming_prayer_name} prayer")
+                    print("sent reminder", chat_id)
+                    change_prayer_time = upcoming_prayer_time
+                except telebot.apihelper.ApiException as e:
+                    if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
+                        logger.warning(f"Bot was blocked by user {chat_id}")
+                        print(f"\n\nBot was blocked by user {chat_id}\n\n")
+                        blocked_users.append(chat_id)
+                        chat_id_dict.pop(chat_id, None)
+                        print("Removed blocker: ", chat_id, "\n\n")
+                        logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+                    else:
+                        logger.error(f"An error occurred in sending reminders: {e}")
+                finally:
+                    continue
 
     logger.info("Cycle check completed")
 

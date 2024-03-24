@@ -125,7 +125,23 @@ async def announce(message):
         print("The database has been updated.\n")      
     else:
         return
-    
+
+# ADMIN FUNCTION (51719761): VIEW BLOCKED USERS
+@sbot.message_handler(commands=['blocked'])
+async def announce(message):
+    if message.chat.id == 51719761:
+        print("\nAdmin is viewing blockers")
+        admin_message = "Welcome Admin, here are the blockers:\n"
+
+        # Remove blocked users from database
+        for blocked_user in blocked_users:
+            admin_message += blocked_user
+            admin_message += "\n"
+        
+        await sbot.send_message(message.chat.id, admin_message)  
+        print("The blockers have been displayed.\n")      
+    else:
+        return
 
 # Check chat_id if present in dict
 def checker(chat_id):
@@ -295,8 +311,6 @@ async def main():
         try:
             logger.info("Starting the main function...")
             print("Executing cycle:")
-            
-            logger.info("Starting the main function...")
             
             logger.info("Initialising cycleCheck in main now")
             print("Begin...")

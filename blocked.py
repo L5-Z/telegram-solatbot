@@ -20,9 +20,11 @@ sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
 
+global blocked_users
+blocked_users = []
+
 # Check for blocked users
 async def check_for_blocked_users(chat_id_dict, logger):
-    blocked_users = []
     for chat_id in chat_id_dict:
         try:
             # Send a dummy message to check if the bot is blocked
