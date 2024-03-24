@@ -7,6 +7,7 @@ from telebot.types import *
 from storage import *
 from scrapeAPI import *
 from convertAPI import *
+from blocked import *
 
 # Bot token
 with open('botKey.txt', 'r') as file:
@@ -263,19 +264,6 @@ async def patch_command(message):
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
 
-# Check for blocked users
-async def check_for_blocked_users(chat_id_dict):
-    blocked_users = []
-    for chat_id in chat_id_dict:
-        try:
-            # Send a dummy message to check if the bot is blocked
-            await sbot.send_chat_action(chat_id=chat_id, action='typing')
-        except telebot.apihelper.ApiException as e:
-            if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
-                logger.warning(f"Bot was blocked by user {chat_id}")
-                blocked_users.append(chat_id)
-    return blocked_users
-
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
     # Save data before shutdown
@@ -291,23 +279,7 @@ async def main():
             print("Executing cycle:")
             
             logger.info("Starting the main function...")
-            print("Block Check...")
-            # Remove blocked users from chat_id_dict or take other appropriate action
-            blocked_users = await check_for_blocked_users(chat_id_dict)
-            if blocked_users:
-                # Notify of blocked users
-                logger.info(f"Bot was blocked by the following users: {', '.join(map(str, blocked_users))}")
             
-                # Remove blocked users from database
-                for blocked_user in blocked_users:
-                    chat_id_dict.pop(blocked_user, None)
-                    print("Removed blocker: ", blocked_user)
-                    logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
-
-            else:
-                logger.info("No users have blocked the bot. Proceeding...")
-                print("No blocks")
-
             logger.info("Initialising cycleCheck in main now")
             print("Begin...")
             await cycleCheck(chat_id_dict)
