@@ -1,6 +1,7 @@
 import logging
 import asyncio
 import telebot
+from telebot import apihelper
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import *
 
@@ -36,7 +37,25 @@ async def announce(message):
                     await sbot.send_message(chat_id, welcome_admin)
                     continue
                 else:
-                    await sbot.send_message(chat_id, announcement_text)
+                    logger.info(f"Attempting to send announcement to {chat_id}")
+                    try:
+                        # Try to send the announcement to check if the bot is blocked
+                        await sbot.send_message(chat_id, announcement_text)
+                        logger.info(f"Sent announcement to {chat_id}")
+                        print("sent announcement", chat_id)
+                    except apihelper.ApiException as e:
+                        logger.error(f"Failed to send announcement to {chat_id}")
+                        if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
+                            logger.warning(f"Bot was blocked by user {chat_id}")
+                            print(f"\n\nBot was blocked by user {chat_id}\n\n")
+                            blocked_users.append(chat_id)
+                            chat_id_dict.pop(chat_id, None)
+                            print("Removed blocker: ", chat_id, "\n\n")
+                            logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+                        else:
+                            logger.error(f"An error occurred in sending announcement: {e}")
+                    finally:
+                        continue
         
         print("Announcement: ", announcement_text, " has been sent\n")      
     else:
