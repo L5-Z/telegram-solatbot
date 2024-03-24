@@ -143,6 +143,16 @@ async def announce(message):
     else:
         return
 
+# ADMIN FUNCTION (51719761): SHUTDOWN BOT
+@sbot.message_handler(commands=['exit'])
+async def addUser(message):
+    if message.chat.id == 51719761:
+        print("Admin has initiated bot shutdown.")
+        logger.info("Admin has initiated bot shutdown.")
+        await shutdown()     
+    else:
+        return
+
 # Check chat_id if present in dict
 def checker(chat_id):
     global chat_id_dict
@@ -303,7 +313,7 @@ async def shutdown():
     # Save data before shutdown
     global chat_id_dict
     await save_data(chat_id_dict)
-
+    logger.info("Bot has been shut down.")
     print("Bot has been shut down.")
 
 async def main():
