@@ -338,11 +338,7 @@ async def shutdown():
 async def main():
     while(True):
         try:
-            logger.info("Starting the main function...")
-            
-            logger.info("Initialising cycleCheck in main now")
             await cycleCheck(chat_id_dict)
-            logger.info("Suspending now")
             print("Suspend")
             await asyncio.sleep(60)
         except Exception as e:

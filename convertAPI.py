@@ -74,7 +74,6 @@ def convert_to_24_hour_format(time_str):
         return time_str  # Return the input unchanged if it's not in the expected format
 
 async def cycleCheck(chat_id_dict):
-    logger.info("Cycle check started")
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
@@ -142,7 +141,6 @@ async def cycleCheck(chat_id_dict):
 
         # Reduce CPU Load, fast return
         if (prayer == 'Isyak') and now > this_prayer_time + timedelta(minutes=1) and now <= new_day:
-            logger.info("Returning after Isyak prayer time")
             print ("Returning: ", now)
             return
 
@@ -151,8 +149,6 @@ async def cycleCheck(chat_id_dict):
             break
 
     # Define the threshold time as the nearest upcoming prayer time
-    logger.info(f"Confirmed upcoming prayer: {upcoming_prayer_name}")
-    logger.info(f"Current time: {now}")
     print("Confirmed upcoming: ", upcoming_prayer_name)
     print("Now: ", now)
 
@@ -182,7 +178,6 @@ async def cycleCheck(chat_id_dict):
                 finally:
                     continue
 
-    logger.info("Cycle check completed")
 
     '''
         for loop and if conditionals updated. do a new for loop and shift these one tab left when reimplementing
