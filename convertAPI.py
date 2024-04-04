@@ -94,6 +94,13 @@ async def cycleCheck(chat_id_dict):
         logger.info("Sending daily prayer times at 5:00 AM")
         await scheduleRun(chat_id_dict)
 
+    # Resource Preservation
+    # Set the target time to between 9:00 to 10:00 PM
+    PM_9 = now.replace(hour=21, minute=0, second=0, microsecond=0)
+    if now < PM_9 + timedelta(hours=1) and now >= PM_9:
+        logger.info("Entering deep sleep after 9:00 PM")
+        await asyncio.sleep(21600)
+
 
     # Filter data
     filtered_data = filterInput(solatTimesRaw)
