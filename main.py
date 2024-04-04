@@ -23,6 +23,42 @@ sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 global chat_id_dict
 chat_id_dict = {}
 
+# Define the menus
+main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
+toggle_menu = ReplyKeyboardMarkup(resize_keyboard=True)
+
+# Main Menu buttons
+main_menu.row(KeyboardButton('Settings'), KeyboardButton('Current Timings'))
+main_menu.row(KeyboardButton('Toggle'), KeyboardButton('Help'))
+toggle_menu.row(KeyboardButton('Reminders'), KeyboardButton('Daily Updates'))
+toggle_menu.row(KeyboardButton('Back'))
+
+# Command handler for the /menu command
+@sbot.message_handler(commands=['menu'])
+async def send_menu(message):
+    await sbot.send_message(message.chat.id, "Please select an option:", reply_markup=main_menu)
+
+# Handler for processing button clicks
+@sbot.message_handler(func=lambda message: True)
+async def handle_click(message):
+    if message.text == 'Settings':
+        await settings_command(message)
+    elif message.text == 'Current Timings':
+        await timings_command(message)
+    elif message.text == 'Toggle':
+        await sbot.send_message(message.chat.id, "Edit your notification settings:", reply_markup=toggle_menu)
+    elif message.text == 'Help':
+        await help_command(message)
+    elif message.text == 'Reminders':
+        await toggle_command(message)
+        await settings_command(message)
+    elif message.text == 'Daily Updates':
+        await daily_command(message)
+        await settings_command(message)
+    elif message.text == 'Back':
+        await sbot.send_message(message.chat.id, "Back to main menu:", reply_markup=main_menu)
+
+
 # ADMIN FUNCTION (51719761): ANNOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
 async def announce(message):
