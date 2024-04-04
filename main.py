@@ -214,9 +214,19 @@ async def settings_command(message):
     chat_id = str(message.chat.id)
     chat_info = chat_id_dict[chat_id]
 
+    if (chat_info['reminders_enabled'] is True):
+        rem_tog = "On \u2705"
+    else:
+        rem_tog = "Off \u274c"
+    
+    if (chat_info['daily_timings_enabled'] is True):
+        dly_tog = "On \u2705"
+    else:
+        dly_tog = "Off \u274c"
+
     reply = "_Current Settings:_\n\n"
-    reply += f"*Reminders Enabled:* {chat_info['reminders_enabled']}\n"
-    reply += f"*Daily Timings Enabled:* {chat_info['daily_timings_enabled']}\n\n"
+    reply += f"*Reminders Enabled:* {rem_tog}\n"
+    reply += f"*Daily Timings Enabled:* {dly_tog}\n\n"
 
     # Send the message with prayer times
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
