@@ -290,9 +290,9 @@ async def daily_command(message):
     chat_info['daily_timings_enabled'] = daily_timings_enabled
 
     if daily_timings_enabled:
-        await sbot.send_message(message.chat.id, "Daily Prayer Times are now enabled.")
+        await sbot.send_message(message.chat.id, "Daily Prayer Times are now enabled. \u2705")
     else:
-        await sbot.send_message(message.chat.id, "Daily Prayer Times are now disabled.")
+        await sbot.send_message(message.chat.id, "Daily Prayer Times are now disabled. \u274c")
 
 
 
@@ -310,9 +310,9 @@ async def toggle_command(message):
     chat_info['reminders_enabled'] = reminders_enabled
 
     if reminders_enabled:
-        await sbot.send_message(message.chat.id, "Azan reminders are now enabled.")
+        await sbot.send_message(message.chat.id, "Azan reminders are now enabled. \u2705")
     else:
-        await sbot.send_message(message.chat.id, "Azan reminders are now disabled.")
+        await sbot.send_message(message.chat.id, "Azan reminders are now disabled. \u274c")
 
 
 
@@ -323,12 +323,14 @@ async def help_command(message):
   checker(message.chat.id)
   # List of available commands
   commands = [
+      "/settings - Displays current notification settings",
+      "/menu - Displays menu buttons",
       "/toggle - Toggle reminders on or off",
       "/timings - Get current prayer times",
       "/daily - Toggle daily prayer times (at 5AM) notifications on or off",
-      "/list - List current slots\n",
-      "/customreminder [<index>] <minutes> - Set or edit a custom reminder (0 minutes to disable)\n(e.g. /customreminder 30 creates a new 30 minute pre-reminder while /customreminder 1 45 edits the pre-reminder in Slot 1 to 45 minutes.\nOmitting <index> changes the bot to 'create' mode\nNote: This is the only command with a format)\n",
-      "/patch - Lists updates to the bot", 
+      # "/list - List current slots\n",
+      # "/customreminder [<index>] <minutes> - Set or edit a custom reminder (0 minutes to disable)\n(e.g. /customreminder 30 creates a new 30 minute pre-reminder while /customreminder 1 45 edits the pre-reminder in Slot 1 to 45 minutes.\nOmitting <index> changes the bot to 'create' mode\nNote: This is the only command with a format)\n",
+      # "/patch - Lists updates to the bot", 
       "/help - List available commands"
   ]
   # Create a message with available commands
