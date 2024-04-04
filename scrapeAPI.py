@@ -14,7 +14,6 @@ async def GetPrayerTime():
     response = requests.get(url, headers={'Cache-Control': 'no-cache'})
     if response.status_code == 200:
       data = response.json()
-      logger.info('Successfully retrieved prayer times')
       return data
     else:
       logger.error(f"Failed to retrieve data. Status code: {response.status_code}")
