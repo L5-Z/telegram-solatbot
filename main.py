@@ -57,11 +57,11 @@ async def handle_click(message):
         await settings_command(message)
     elif message.text == 'Back':
         await sbot.send_message(message.chat.id, "Back to main menu:", reply_markup=main_menu)
-    elif message.text == '/announce':
+    elif '/announce' in message.text:
         await announce(message)
-    elif message.text == '/add':
+    elif '/add' in message.text:
         await addUser(message)
-    elif message.text == '/del':
+    elif '/del' in message.text:
         await delUser(message)
     elif message.text == '/dump':
         await dumpDict(message)
