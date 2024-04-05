@@ -41,22 +41,39 @@ async def send_menu(message):
 # Handler for processing button clicks
 @sbot.message_handler(func=lambda message: True)
 async def handle_click(message):
-    if message.text == 'Settings':
+    if message.text == 'Settings' or message.text == '/settings':
         await settings_command(message)
-    elif message.text == 'Current Timings':
+    elif message.text == 'Current Timings' or message.text == '/timings':
         await timings_command(message)
     elif message.text == 'Toggle':
         await sbot.send_message(message.chat.id, "Edit your notification settings:", reply_markup=toggle_menu)
-    elif message.text == 'Help':
+    elif message.text == 'Help' or message.text == '/help':
         await help_command(message)
-    elif message.text == 'Reminders':
+    elif message.text == 'Reminders' or message.text == '/toggle':
         await toggle_command(message)
         await settings_command(message)
-    elif message.text == 'Daily Updates':
+    elif message.text == 'Daily Updates' or message.text == '/daily':
         await daily_command(message)
         await settings_command(message)
     elif message.text == 'Back':
         await sbot.send_message(message.chat.id, "Back to main menu:", reply_markup=main_menu)
+    elif message.text == '/announce':
+        await announce(message)
+    elif message.text == '/add':
+        await addUser(message)
+    elif message.text == '/del':
+        await delUser(message)
+    elif message.text == '/dump':
+        await dumpDict(message)
+    elif message.text == '/peek':
+        await peekDict(message)
+    elif message.text == '/updatedb':
+        await updateDB(message)
+    elif message.text == '/blocked':
+        await blockedUsers(message)
+    elif message.text == '/exit':
+        await exitBot(message)
+
 
 
 # ADMIN FUNCTION (51719761): ANNOUNCEMENTS
@@ -116,7 +133,7 @@ async def addUser(message):
 
 # ADMIN FUNCTION (51719761): REMOVE USER
 @sbot.message_handler(commands=['del'])
-async def addUser(message):
+async def delUser(message):
     if message.chat.id == 51719761:
         remove_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
         print("\nAdmin is deleting user: ", remove_chat_id)
@@ -133,7 +150,7 @@ async def addUser(message):
     
 # ADMIN FUNCTION (51719761): PRINT ALL USER ID
 @sbot.message_handler(commands=['dump'])
-async def addUser(message):
+async def dumpDict(message):
     if message.chat.id == 51719761:
         print("\nAdmin is dumping user database:\n")
         data_dump = "User ID Dump:\n\n"
@@ -149,7 +166,7 @@ async def addUser(message):
     
 # ADMIN FUNCTION (51719761): PRINT ALL USER ID
 @sbot.message_handler(commands=['peek'])
-async def addUser(message):
+async def peekDict(message):
     if message.chat.id == 51719761:
         print("\nAdmin is viewing user database:\n")
 
@@ -163,7 +180,7 @@ async def addUser(message):
     
 # ADMIN FUNCTION (51719761): UPDATE DATABASE
 @sbot.message_handler(commands=['updatedb'])
-async def announce(message):
+async def updateDB(message):
     if message.chat.id == 51719761:
         print("\nAdmin is updating database")
         admin_message = "Welcome Admin, the database has been updated.\n"
@@ -183,7 +200,7 @@ async def announce(message):
 
 # ADMIN FUNCTION (51719761): VIEW BLOCKED USERS
 @sbot.message_handler(commands=['blocked'])
-async def announce(message):
+async def blockedUsers(message):
     if message.chat.id == 51719761:
         print("\nAdmin is viewing blockers")
         admin_message = "Welcome Admin, here are the blockers:\n"
@@ -200,7 +217,7 @@ async def announce(message):
 
 # ADMIN FUNCTION (51719761): SHUTDOWN BOT
 @sbot.message_handler(commands=['exit'])
-async def addUser(message):
+async def exitBot(message):
     if message.chat.id == 51719761:
         print("Admin has initiated bot shutdown.")
         logger.info("Admin has initiated bot shutdown.")
