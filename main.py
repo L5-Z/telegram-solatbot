@@ -321,9 +321,9 @@ async def qiblat_info(message):
 async def zakat_info(message):
     await checker(message.chat.id)
     reply = "Zakat Info:\n"
-    reply += "[https://www.zakat.sg/]"
+    reply += "[Zakat Singapore](https://www.zakat.sg/)"
     # Send the message with zakat link
-    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+    await sbot.send_message(message.chat.id, reply, 'Markdown')
 
 # /daily command handler
 @sbot.message_handler(regexp='daily')
