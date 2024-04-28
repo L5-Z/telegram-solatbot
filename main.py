@@ -123,7 +123,7 @@ async def addUser(message):
         admin_message = "Welcome Admin, the following user is being added:\n"
         notify = admin_message + new_chat_id
 
-        checker(new_chat_id)
+        await checker(new_chat_id)
         
         print("User: ", new_chat_id, " has been added\n")
         await sbot.send_message(message.chat.id, notify)     
@@ -257,14 +257,14 @@ async def start_command(message):
     welcome_message += "Updated and Patched as of 22/3/24\n"
     welcome_message += "Do /patch to view patchnotes\n\n"
     welcome_message += "Bot made by L5Z (Faatih) :)"
-    checker(message.chat.id)
+    await checker(message.chat.id)
     await sbot.send_message(message.chat.id, welcome_message)
 
 # /settings command handler
 @sbot.message_handler(regexp='settings')
 @sbot.message_handler(commands=['settings'])
 async def settings_command(message):
-    checker(message.chat.id)
+    await checker(message.chat.id)
     
     chat_id = str(message.chat.id)
     chat_info = chat_id_dict[chat_id]
@@ -290,7 +290,7 @@ async def settings_command(message):
 @sbot.message_handler(regexp='timings')
 @sbot.message_handler(commands=['timings'])
 async def timings_command(message):
-    checker(message.chat.id)
+    await checker(message.chat.id)
     reply = await printTimes()
     # Send the message with prayer times
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
@@ -300,7 +300,7 @@ async def timings_command(message):
 @sbot.message_handler(regexp='daily')
 @sbot.message_handler(commands=['daily'])
 async def daily_command(message):
-    checker(message.chat.id)
+    await checker(message.chat.id)
 
     chat_id = str(message.chat.id)
     
@@ -319,7 +319,7 @@ async def daily_command(message):
 @sbot.message_handler(regexp='toggle')
 @sbot.message_handler(commands=['toggle'])
 async def toggle_command(message):
-    checker(message.chat.id)
+    await checker(message.chat.id)
 
     chat_id = str(message.chat.id)
 
@@ -339,7 +339,7 @@ async def toggle_command(message):
 @sbot.message_handler(regexp='help')
 @sbot.message_handler(commands=['help'])
 async def help_command(message):
-  checker(message.chat.id)
+  await checker(message.chat.id)
   # List of available commands
   commands = [
       "/settings - Displays current notification settings",
@@ -363,7 +363,7 @@ async def help_command(message):
 @sbot.message_handler(regexp='patch')
 @sbot.message_handler(commands=['patch'])
 async def patch_command(message):
-  checker(message.chat.id)
+  await checker(message.chat.id)
   # Patch thread
   patch_0_0_2 = [
       "\nPatch: v0.0.2  |  27/9/23",
