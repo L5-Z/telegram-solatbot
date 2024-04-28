@@ -57,7 +57,7 @@ async def send_reminder(chat_id, prayer, masa):
         if prayer == "Syuruk":
             reminder_message += "\U000FE000 The sun is up! \U000FE000"
         else:
-            reminder_message += "\U0001F54B May your fardh prayer be blessed! \U0001F932"
+            reminder_message += "\U0000FE0F May your fardh prayer be blessed! \U0001F932"
 
         # Send message
         await sbot.send_message(chat_id, reminder_message, 'Markdown')
