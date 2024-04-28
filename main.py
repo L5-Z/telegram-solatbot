@@ -310,7 +310,7 @@ async def timings_command(message):
 @sbot.message_handler(commands=['qiblat'])
 async def qiblat_info(message):
     await checker(message.chat.id)
-    reply = "\U0001F54B Qiblat for Singapore:\n\n"
+    reply = "\U0001F54B _*Qiblat for Singapore:*_\n\n"
     reply += "\U0001F9ED *293* degrees \[NW\]"
     # Send the message with qiblat directions
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
@@ -320,7 +320,7 @@ async def qiblat_info(message):
 @sbot.message_handler(commands=['zakat'])
 async def zakat_info(message):
     await checker(message.chat.id)
-    reply = "Zakat Info:\n"
+    reply = "_*Zakat Info:*_\n"
     reply += "[Zakat Singapore](https://www.zakat.sg/)"
     # Send the message with zakat link
     await sbot.send_message(message.chat.id, reply, 'Markdown')
