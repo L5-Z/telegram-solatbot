@@ -28,8 +28,8 @@ main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 toggle_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 
 # Main Menu buttons
-main_menu.row(KeyboardButton('Settings'), KeyboardButton('Current Timings'))
-main_menu.row(KeyboardButton('Toggle'), KeyboardButton('Help'))
+main_menu.row(KeyboardButton('Notifications'), KeyboardButton('Current Timings'))
+main_menu.row(KeyboardButton('Settings'), KeyboardButton('Help'))
 toggle_menu.row(KeyboardButton('Reminders'), KeyboardButton('Daily Updates'))
 toggle_menu.row(KeyboardButton('Back'))
 
@@ -45,7 +45,7 @@ async def handle_click(message):
         await settings_command(message)
     elif message.text == 'Current Timings' or message.text == '/timings':
         await timings_command(message)
-    elif message.text == 'Toggle':
+    elif message.text == 'Notifications':
         await sbot.send_message(message.chat.id, "Edit your notification settings:", reply_markup=toggle_menu)
     elif message.text == 'Help' or message.text == '/help':
         await help_command(message)
@@ -226,7 +226,7 @@ async def exitBot(message):
         return
 
 # Check chat_id if present in dict
-def checker(chat_id):
+async def checker(chat_id):
     global chat_id_dict
 
     # Convert chat_id to string to ensure consistency
@@ -238,6 +238,8 @@ def checker(chat_id):
             'daily_timings_enabled': True,
             'custom_durations': [False, False, False, False, False], # Time for 5, 10, 15, 20, 30
         }
+        await save_data(chat_id_dict)
+        await sbot.send_message(51719761, "Admin New User Joined: ", chat_id)
 
 
 # Command Handlers
