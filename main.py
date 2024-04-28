@@ -26,12 +26,16 @@ chat_id_dict = {}
 # Define the menus
 main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 toggle_menu = ReplyKeyboardMarkup(resize_keyboard=True)
+info_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 
 # Main Menu buttons
 main_menu.row(KeyboardButton('Notifications'), KeyboardButton('Current Timings'))
-main_menu.row(KeyboardButton('Settings'), KeyboardButton('Help'))
+main_menu.row(KeyboardButton('Settings'), KeyboardButton('Information'))
+main_menu.row(KeyboardButton('Help'))
 toggle_menu.row(KeyboardButton('Reminders'), KeyboardButton('Daily Updates'))
 toggle_menu.row(KeyboardButton('Back'))
+info_menu.row(KeyboardButton('Qiblat'), KeyboardButton('Zakat'))
+info_menu.row(KeyboardButton('Back'))
 
 # Command handler for the /menu command
 @sbot.message_handler(commands=['menu'])
@@ -57,6 +61,12 @@ async def handle_click(message):
         await settings_command(message)
     elif message.text == 'Back':
         await sbot.send_message(message.chat.id, "Back to main menu:", reply_markup=main_menu)
+    elif message.text == 'Information':
+        await sbot.send_message(message.chat.id, "More Information:", reply_markup=info_menu)
+    elif message.text == 'Qiblat' or message.text == '/qiblat':
+        await qiblat_info(message)
+    elif message.text == 'Zakat' or message.text == '/zakat':
+        await zakat_info(message)
     elif '/announce' in message.text:
         await announce(message)
     elif '/add' in message.text:
@@ -295,6 +305,24 @@ async def timings_command(message):
     # Send the message with prayer times
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
+# /qiblat command handler
+@sbot.message_handler(regexp='qiblat')
+@sbot.message_handler(commands=['qiblat'])
+async def qiblat_info(message):
+    await checker(message.chat.id)
+    reply = "\U0001F54B Qiblat for Singapore:\n\n"
+    reply += "\U0001F9ED 293 degrees [NW]"
+    # Send the message with qiblat directions
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+
+# /zakat command handler
+@sbot.message_handler(regexp='zakat')
+@sbot.message_handler(commands=['zakat'])
+async def zakat_info(message):
+    await checker(message.chat.id)
+    reply = "https://www.zakat.sg/"
+    # Send the message with zakat link
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
 # /daily command handler
 @sbot.message_handler(regexp='daily')
