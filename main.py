@@ -239,7 +239,7 @@ async def checker(chat_id):
             'custom_durations': [False, False, False, False, False], # Time for 5, 10, 15, 20, 30
         }
         await save_data(chat_id_dict)
-        await sbot.send_message(51719761, "Admin New User Joined: ", chat_id)
+        await sbot.send_message('51719761', "Admin New User Joined: ", chat_id)
 
 
 # Command Handlers
