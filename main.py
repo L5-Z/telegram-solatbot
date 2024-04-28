@@ -342,8 +342,8 @@ async def help_command(message):
   await checker(message.chat.id)
   # List of available commands
   commands = [
-      "/settings - Displays current notification settings",
       "/menu - Displays menu buttons",
+      "/settings - Displays current notification settings",
       "/toggle - Toggle reminders on or off",
       "/timings - Get current prayer times",
       "/daily - Toggle daily prayer times (at 5AM) notifications on or off",
