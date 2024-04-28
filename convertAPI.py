@@ -37,12 +37,27 @@ async def send_reminder(chat_id, prayer, masa):
     except ValueError as e:
         logger.error(f"ValueError converting masa to 12H, send_reminder: {e}")
     finally:
-        reminder_message = f'\U0001F54B It is now *{prayer} ({masa})* \U0001F54B\n\n'
+        header_art = '\U0001F54B'
+
+        if prayer == "Subuh":
+            header_art = '\U000FE03B'
+        if prayer == "Syuruk":
+            header_art = '\U0001F305'
+        if prayer == "Zohor":
+            header_art = '\U0001F3D9'
+        if prayer == "Asar":
+            header_art = '\U000FE00C'
+        if prayer == "Maghrib":
+            header_art = '\U0001F304'
+        if prayer == "Isyak":
+            header_art = '\U000FE008'
+
+        reminder_message = f'{header_art} It is now *{prayer} ({masa})* {header_art}\n\n'
 
         if prayer == "Syuruk":
-            reminder_message += "\U0001F305 The sun is up! \U0001F305"
+            reminder_message += "\U000FE000 The sun is up! \U000FE000"
         else:
-            reminder_message += "\U0001F932 May your fardh prayer be blessed! \U0001F932"
+            reminder_message += "\U0001F54B May your fardh prayer be blessed! \U0001F932"
 
         # Send message
         await sbot.send_message(chat_id, reminder_message, 'Markdown')
