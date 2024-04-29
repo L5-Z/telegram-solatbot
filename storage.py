@@ -44,7 +44,7 @@ def load_data():
                 logger.warning("JSON file contains an empty dictionary. Initializing with an empty dictionary")
                 data = {}
             else:
-                data = json.load(file)
+                data = json.loads(data)
 
             logger.info("Data loaded successfully from JSON file")
     except FileNotFoundError:
