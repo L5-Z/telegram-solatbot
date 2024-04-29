@@ -27,7 +27,7 @@ sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
-custom_timezone = pytz.FixedOffset(450) # Default 450 for 7h:30mins ahead UTC, behind SG by 30 mins
+custom_timezone = pytz.FixedOffset(480) # Default 480 for SG, 450 for 7h:30mins ahead UTC and behind SG by 30 mins
 
 # Function to send a reminder
 async def send_reminder(chat_id, prayer, masa):
@@ -40,24 +40,24 @@ async def send_reminder(chat_id, prayer, masa):
         header_art = '\U0001F54B'
 
         if prayer == "Subuh":
-            header_art = '\U000FE03B'
+            header_art = '\U0001F30C'
         if prayer == "Syuruk":
             header_art = '\U0001F305'
         if prayer == "Zohor":
             header_art = '\U0001F3D9'
         if prayer == "Asar":
-            header_art = '\U000FE00C'
+            header_art = '\U0001F307'
         if prayer == "Maghrib":
             header_art = '\U0001F304'
         if prayer == "Isyak":
-            header_art = '\U000FE008'
+            header_art = '\U0001F303'
 
         reminder_message = f'{header_art} It is now *{prayer} ({masa})* {header_art}\n\n'
 
         if prayer == "Syuruk":
-            reminder_message += "\U000FE000 The sun is up! \U000FE000"
+            reminder_message += "\u2600\uFE0F The sun is up! \u2600\uFE0F"
         else:
-            reminder_message += "\U0000FE0F May your fardh prayer be blessed! \U0001F932"
+            reminder_message += "\u262A May your fardh prayer be blessed! \U0001F932"
 
         # Send message
         await sbot.send_message(chat_id, reminder_message, 'Markdown')
