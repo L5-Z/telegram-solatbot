@@ -8,6 +8,7 @@ from datetime import *
 
 from scrapeAPI import *
 from blocked import *
+from storage import save_data
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,8 @@ async def scheduleRun(chat_id_dict):
             # Send message
             await sbot.send_message(chat_id, times_text, 'MarkdownV2')
 
+    await save_data(chat_id_dict)
+    logger.info(f"Updated database.")
     print("Scheduled daily has been run\n")
 
 

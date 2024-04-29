@@ -73,6 +73,8 @@ async def handle_click(message):
         await addUser(message)
     elif '/del' in message.text:
         await delUser(message)
+    elif '/whisper' in message.text:
+        await whisper_user(message)
     elif message.text == '/dump':
         await dumpDict(message)
     elif message.text == '/peek':
@@ -227,12 +229,12 @@ async def blockedUsers(message):
 
 # ADMIN FUNCTION (51719761): WHISPER USER
 @sbot.message_handler(commands=['whisper'])
-async def blockedUsers(message):
+async def whisper_user(message):
     if message.chat.id == 51719761:
         print("\nAdmin is whispering")
-        receiver, whisper_text = message.text.split(' ', 2) # Extract text after the command
+        _, receiver, whisper_text = message.text.split(' ', 2) # Extract text after the command
         admin_message = "Welcome Admin, whisper received:\n"
-        receiver_message = f"Sent to {receiver}"
+        receiver_message = f"\nWas sent to {receiver}"
         welcome_admin = admin_message + whisper_text + receiver_message
 
         logger.info(f"Attempting to send whisper to {receiver}")
@@ -280,7 +282,8 @@ async def checker(chat_id):
             'custom_durations': [False, False, False, False, False], # Time for 5, 10, 15, 20, 30
         }
         await save_data(chat_id_dict)
-        await sbot.send_message('51719761', "Admin New User Joined: ", chat_id)
+        logger.info(f"Saved {chat_id} to database.")
+        await sbot.send_message('51719761', f"Admin New User Joined: {chat_id}")
 
 
 # Command Handlers
