@@ -6,7 +6,7 @@ chat_ids.txt
 /__pycache__/
 
 # Save File
-saveFile.json
+*.json
 C:\Users\L5Z\Desktop\VSC Projects\solatBot\telegram-solatbot\saveFile.json
 
 # App Log
