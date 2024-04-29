@@ -225,6 +225,37 @@ async def blockedUsers(message):
     else:
         return
 
+# ADMIN FUNCTION (51719761): WHISPER USER
+@sbot.message_handler(commands=['whisper'])
+async def blockedUsers(message):
+    if message.chat.id == 51719761:
+        print("\nAdmin is whispering")
+        receiver, whisper_text = message.text.split(' ', 2) # Extract text after the command
+        admin_message = "Welcome Admin, whisper received:\n"
+        receiver_message = f"Sent to {receiver}"
+        welcome_admin = admin_message + whisper_text + receiver_message
+
+        logger.info(f"Attempting to send whisper to {receiver}")
+        try:
+            # Try to send the whisper to check if the bot is blocked
+            await sbot.send_message(receiver, whisper_text)
+            logger.info(f"Sent whisper to {receiver}")
+            await sbot.send_message('51719761', welcome_admin)
+            print("sent whisper: ", receiver)
+        except apihelper.ApiException as e:
+            logger.error(f"Failed to send announcement to {receiver}")
+            if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
+                logger.warning(f"Bot was blocked by user {receiver}")
+                print(f"\n\nBot was blocked by user {receiver}\n\n")
+                blocked_users.append(receiver)
+                chat_id_dict.pop(receiver, None)
+                print("Removed blocker: ", receiver, "\n\n")
+                logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+            else:
+                logger.error(f"An error occurred in sending announcement: {e}")  
+    else:
+        return
+
 # ADMIN FUNCTION (51719761): SHUTDOWN BOT
 @sbot.message_handler(commands=['exit'])
 async def exitBot(message):
