@@ -35,7 +35,17 @@ def convert_values(obj):
 def load_data():
     try:
         with open(DATA_FILE, "r") as file:
-            data = json.load(file)
+            data = file.read()
+            if data.strip() == "":
+                logger.warning("JSON file is empty. Creating a new file")
+                data = {}
+                new_json(data)
+            elif data.strip() == "{}":
+                logger.warning("JSON file contains an empty dictionary. Initializing with an empty dictionary")
+                data = {}
+            else:
+                data = json.load(file)
+
             logger.info("Data loaded successfully from JSON file")
     except FileNotFoundError:
         logger.warning("JSON file not found. Creating a new file")
