@@ -71,11 +71,27 @@ async def scheduleRun(chat_id_dict):
     for chat_id, chat_info in chat_id_dict.items():
         if chat_info['daily_timings_enabled']:
 
-            # fetch formatted times
-            times_text = await printTimes()
+            try:
+                    # Try to send the reminder to check if the bot is blocked
+                    # fetch formatted times
+                    times_text = await printTimes()
 
-            # Send message
-            await sbot.send_message(chat_id, times_text, 'MarkdownV2')
+                    # Send message
+                    await sbot.send_message(chat_id, times_text, 'MarkdownV2')
+                    logger.info(f"Sent daily reminder to {chat_id}")
+                    print("sent reminder", chat_id)
+            except telebot.apihelper.ApiException as e:
+                if "bot was blocked by the user" in e.result.text: # e.result.status_code == 403 and 
+                    logger.warning(f"Bot was blocked by user {chat_id}")
+                    print(f"\n\nBot was blocked by user {chat_id}\n\n")
+                    blocked_users.append(chat_id)
+                    chat_id_dict.pop(chat_id, None)
+                    print("Removed blocker: ", chat_id, "\n\n")
+                    logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+                else:
+                    logger.error(f"An error occurred in sending reminders: {e}")
+            finally:
+                continue
 
     await save_data(chat_id_dict)
     logger.info(f"Updated database.")
@@ -192,13 +208,16 @@ async def cycleCheck(chat_id_dict):
                     print("sent reminder", chat_id)
                     change_prayer_time = upcoming_prayer_time
                 except telebot.apihelper.ApiException as e:
-                    if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
+                    if "bot was blocked by the user" in e.result.text: # e.result.status_code == 403 and 
                         logger.warning(f"Bot was blocked by user {chat_id}")
                         print(f"\n\nBot was blocked by user {chat_id}\n\n")
                         blocked_users.append(chat_id)
                         chat_id_dict.pop(chat_id, None)
                         print("Removed blocker: ", chat_id, "\n\n")
                         logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+
+                        await save_data(chat_id_dict)
+                        logger.info(f"Updated database.")
                     else:
                         logger.error(f"An error occurred in sending reminders: {e}")
                 finally:
