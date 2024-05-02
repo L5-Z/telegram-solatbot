@@ -469,7 +469,7 @@ async def main():
         try:
             await cycleCheck(chat_id_dict)
             print("Suspend")
-            await asyncio.sleep(60)
+            await asyncio.sleep(1)
         except Exception as e:
             logger.error(f"An error occurred in the main function: {e}")
 

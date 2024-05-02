@@ -202,6 +202,8 @@ async def cycleCheck(chat_id_dict):
                         logger.error(f"An error occurred in sending reminders: {e}")
                 finally:
                     continue
+        
+        await asyncio.sleep(61)
 
 
     '''
