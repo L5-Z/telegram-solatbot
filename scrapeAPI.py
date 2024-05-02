@@ -2,12 +2,11 @@
 import requests
 import json
 import time
-import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Function to scrape prayer times from the website
+# ASYNC Function to scrape prayer times from the website
 async def GetPrayerTime():
   url = f'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime?v=${str(int(time.time()))}'
   try:
@@ -24,6 +23,34 @@ async def GetPrayerTime():
   except json.JSONDecodeError as e:
     logger.error(f"Error decoding JSON: {e}")
     return None
+
+# Function to scrape prayer times from the website
+def NonAsync_GetPrayerTime():
+  url = f'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime?v=${str(int(time.time()))}'
+  try:
+    response = requests.get(url, headers={'Cache-Control': 'no-cache'})
+    if response.status_code == 200:
+      data = response.json()
+      return data
+    else:
+      logger.error(f"Failed to retrieve data. Status code: {response.status_code}")
+      return None
+  except requests.exceptions.RequestException as e:
+    logger.error(f"Error: {e}")
+    return None
+  except json.JSONDecodeError as e:
+    logger.error(f"Error decoding JSON: {e}")
+    return None
+
+# ASYNC Function to save prayer times from the website to a local dict
+async def RefreshPrayerTime():
+  database_prayer_times = await GetPrayerTime()
+  return database_prayer_times
+
+# Function to save prayer times from the website to a local dict
+def NonAsync_RefreshPrayerTime():
+  database_prayer_times = NonAsync_GetPrayerTime()
+  return database_prayer_times
     
 # Function to manually add AM/PM based on prayer type
 def formatTimes(input_dict):
