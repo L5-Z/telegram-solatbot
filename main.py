@@ -482,11 +482,6 @@ async def poll():
 
 if __name__ == '__main__':
 
-    chat_id_dict = load_data()
-    print("User profiles have been loaded")
-    database_prayer_times = NonAsync_RefreshPrayerTime()
-    print("Prayer Times have been loaded")
-
     # Configure the logger
     logging.basicConfig(
         filename='app.log',
@@ -496,6 +491,16 @@ if __name__ == '__main__':
     )
     # Get the logger instance
     logger = logging.getLogger(__name__)
+
+    logger.info("Bot is initialised and will run.")
+
+    chat_id_dict = load_data()
+    print("User profiles have been loaded")
+    logger.info("User profiles have been loaded")
+    database_prayer_times = NonAsync_RefreshPrayerTime()
+    print("Prayer Times have been loaded")
+    logger.info("Prayer Times have been loaded")
+
     logger.info("Logging begin.")
 
     loop = asyncio.get_event_loop()
