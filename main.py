@@ -105,7 +105,7 @@ async def announce(message):
                     logger.info(f"Attempting to send announcement to {chat_id}")
                     try:
                         # Try to send the announcement to check if the bot is blocked
-                        await sbot.send_message(chat_id, announcement_text, 'MarkdownV2')
+                        await sbot.send_message(chat_id, announcement_text)
                         logger.info(f"Sent announcement to {chat_id}")
                         print("sent announcement", chat_id)
                     except apihelper.ApiException as e:
