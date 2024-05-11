@@ -1,4 +1,5 @@
 # Converts solat times into 24-hour format in SGT and handles time based events
+import re
 import pytz
 import datetime
 import logging
@@ -107,10 +108,12 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
         logger.error("Failed to retrieve prayer times from local database")
         await RefreshPrayerTime()
         return
+    print("RAW:", solatTimesRaw)
     
     # Update times
-    AM_12 = now.replace(hour=0, minute=5, second=0, microsecond=0)
+    AM_12 = now.replace(hour=0, minute=0, second=0, microsecond=0)
     if now < AM_12 + timedelta(minutes=1) and now >= AM_12:
+        logger.info("Current Prayer Times: ", database_prayer_times)
         logger.info("Updating Prayer Times")
         await RefreshPrayerTime()
         await asyncio.sleep(14400)
@@ -143,6 +146,7 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
 
     # Convert prayer times to 24-hour format in SGT, excluding 'PrayerDate'
     solatTimesFormatted = {prayer: convert_to_24_hour_format(time) for prayer, time in solatTimesAMPM.items()}
+
     # Extract the date value and convert it to a datetime object
     prayer_date_str = dateCalendar.get('PrayerDate', '')  # Use the calendar dictionary here
     prayer_date_format = '%d %B %Y'  # Define the format of the date string
