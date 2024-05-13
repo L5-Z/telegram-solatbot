@@ -46,14 +46,12 @@ def NonAsync_GetPrayerTime():
 async def RefreshPrayerTime():
   database_prayer_times = await GetPrayerTime()
   logger.info("Succesfully updated Prayer Times")
-  logger.info("Updated Prayer Time: ", database_prayer_times)
   return database_prayer_times
 
 # Function to save prayer times from the website to a local dict
 def NonAsync_RefreshPrayerTime():
   database_prayer_times = NonAsync_GetPrayerTime()
   logger.info("Succesfully updated Prayer Times")
-  logger.info("Updated Prayer Time: ", database_prayer_times)
   return database_prayer_times
     
 # Function to manually add AM/PM based on prayer type

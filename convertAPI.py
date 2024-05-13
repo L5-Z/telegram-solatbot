@@ -113,9 +113,9 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
     # Update times
     AM_12 = now.replace(hour=0, minute=0, second=0, microsecond=0)
     if now < AM_12 + timedelta(minutes=1) and now >= AM_12:
-        logger.info("Current Prayer Times: ", database_prayer_times)
         logger.info("Updating Prayer Times")
         await RefreshPrayerTime()
+        print("Updated: ", database_prayer_times)
         await asyncio.sleep(14400)
     
     # /daily command
