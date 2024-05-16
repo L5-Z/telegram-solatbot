@@ -106,17 +106,18 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
     solatTimesRaw = database_prayer_times
     if solatTimesRaw is None:
         logger.error("Failed to retrieve prayer times from local database")
-        await RefreshPrayerTime()
+        database_prayer_times = await RefreshPrayerTime()
         return
     print("RAW:", solatTimesRaw)
     
     # Update times
-    AM_12 = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
     if now < AM_12 + timedelta(minutes=1) and now >= AM_12:
         logger.info("Updating Prayer Times")
-        await RefreshPrayerTime()
+        database_prayer_times = await RefreshPrayerTime()
         print("Updated: ", database_prayer_times)
         await asyncio.sleep(14400)
+        return
     
     # /daily command
     # Set the target time to 5:00 AM
