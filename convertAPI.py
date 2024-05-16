@@ -1,7 +1,9 @@
 # Converts solat times into 24-hour format in SGT and handles time based events
+import re
 import pytz
 import datetime
 import logging
+import asyncio
 
 from telebot.async_telebot import AsyncTeleBot
 from datetime import *
@@ -16,6 +18,7 @@ global upcoming_prayer_time
 upcoming_prayer_time = None
 global change_prayer_time
 change_prayer_time = None
+
 
 # Bot token
 with open('botKey.txt', 'r') as file:
@@ -107,7 +110,7 @@ def convert_to_24_hour_format(time_str):
         logger.error(f"Error converting time to 24H format: {e}")
         return time_str  # Return the input unchanged if it's not in the expected format
 
-async def cycleCheck(chat_id_dict):
+async def cycleCheck(chat_id_dict, database_prayer_times):
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
@@ -116,11 +119,22 @@ async def cycleCheck(chat_id_dict):
     global change_prayer_time
     
     # Get raw prayer time data
-    solatTimesRaw = await GetPrayerTime()
+    solatTimesRaw = database_prayer_times
     if solatTimesRaw is None:
-        logger.error("Failed to retrieve prayer times from MUIS")
+        logger.error("Failed to retrieve prayer times from local database")
+        database_prayer_times = await RefreshPrayerTime()
         return
-
+    print("RAW:", solatTimesRaw)
+    
+    # Update times
+    AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
+    if now < AM_12 + timedelta(minutes=1) and now >= AM_12:
+        logger.info("Updating Prayer Times")
+        database_prayer_times = await RefreshPrayerTime()
+        print("Updated: ", database_prayer_times)
+        await asyncio.sleep(14400)
+        return
+    
     # /daily command
     # Set the target time to 5:00 AM
     AM_5 = now.replace(hour=5, minute=0, second=0, microsecond=0)
@@ -134,7 +148,7 @@ async def cycleCheck(chat_id_dict):
     PM_9 = now.replace(hour=21, minute=0, second=0, microsecond=0)
     if now < PM_9 + timedelta(hours=1) and now >= PM_9:
         logger.info("Entering deep sleep after 9:00 PM")
-        await asyncio.sleep(21600)
+        await asyncio.sleep(7200)
 
 
     # Filter data
@@ -150,6 +164,7 @@ async def cycleCheck(chat_id_dict):
 
     # Convert prayer times to 24-hour format in SGT, excluding 'PrayerDate'
     solatTimesFormatted = {prayer: convert_to_24_hour_format(time) for prayer, time in solatTimesAMPM.items()}
+
     # Extract the date value and convert it to a datetime object
     prayer_date_str = dateCalendar.get('PrayerDate', '')  # Use the calendar dictionary here
     prayer_date_format = '%d %B %Y'  # Define the format of the date string

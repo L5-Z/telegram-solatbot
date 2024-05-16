@@ -23,6 +23,10 @@ sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 global chat_id_dict
 chat_id_dict = {}
 
+# Initialize a global dictionary to store prayer_times information
+global database_prayer_times
+database_prayer_times = {}
+
 # Define the menus
 main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 toggle_menu = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -467,7 +471,7 @@ async def shutdown():
 async def main():
     while(True):
         try:
-            await cycleCheck(chat_id_dict)
+            await cycleCheck(chat_id_dict, database_prayer_times)
             print("Suspend")
             await asyncio.sleep(1)
         except Exception as e:
@@ -478,9 +482,6 @@ async def poll():
 
 if __name__ == '__main__':
 
-    chat_id_dict = load_data()
-    print("User profiles have been loaded")
-
     # Configure the logger
     logging.basicConfig(
         filename='app.log',
@@ -490,6 +491,16 @@ if __name__ == '__main__':
     )
     # Get the logger instance
     logger = logging.getLogger(__name__)
+
+    logger.info("Bot is initialised and will run.")
+
+    chat_id_dict = load_data()
+    print("User profiles have been loaded")
+    logger.info("User profiles have been loaded")
+    database_prayer_times = NonAsync_RefreshPrayerTime()
+    print("Prayer Times have been loaded")
+    logger.info("Prayer Times have been loaded")
+
     logger.info("Logging begin.")
 
     loop = asyncio.get_event_loop()
