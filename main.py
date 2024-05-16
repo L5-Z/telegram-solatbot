@@ -1,6 +1,6 @@
 import logging
 import asyncio
-import telebot
+import telebot 
 from telebot import apihelper
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import *
@@ -345,7 +345,7 @@ async def timings_command(message):
 async def qiblat_info(message):
     await checker(message.chat.id)
     reply = "\U0001F54B _*Qiblat for Singapore:*_\n\n"
-    reply += "\U0001F9ED *293* degrees \[NW\]"
+    reply += "\U0001F9ED *293* degrees \\[NW\\]"
     # Send the message with qiblat directions
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
