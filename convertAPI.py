@@ -151,6 +151,11 @@ async def cycleCheck(chat_id_dict):#, database_prayer_times):
     if now < PM_9 + timedelta(hours=1) and now >= PM_9:
         logger.info("Entering deep sleep after 9:00 PM")
         await asyncio.sleep(7200)
+    # Set the target time to between 8:00 to 9:00 AM
+    AM_8 = now.replace(hour=8, minute=0, second=0, microsecond=0)
+    if now < AM_8 + timedelta(hours=1) and now >= AM_8:
+        logger.info("Entering deep sleep after 8:00 AM")
+        await asyncio.sleep(10800)
 
 
     # Filter data
