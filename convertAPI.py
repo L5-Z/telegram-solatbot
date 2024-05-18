@@ -11,6 +11,7 @@ from datetime import *
 from scrapeAPI import *
 from blocked import *
 from storage import save_data
+from main import database_prayer_times
 
 logger = logging.getLogger(__name__)
 
@@ -110,17 +111,18 @@ def convert_to_24_hour_format(time_str):
         logger.error(f"Error converting time to 24H format: {e}")
         return time_str  # Return the input unchanged if it's not in the expected format
 
-async def cycleCheck(chat_id_dict, database_prayer_times):
+async def cycleCheck(chat_id_dict):#, database_prayer_times):
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
 
     global upcoming_prayer_time
     global change_prayer_time
+    global database_prayer_times
     
     # Get raw prayer time data
     solatTimesRaw = database_prayer_times
-    if solatTimesRaw is None:
+    if solatTimesRaw is None or not solatTimesRaw:
         logger.error("Failed to retrieve prayer times from local database")
         database_prayer_times = await RefreshPrayerTime()
         return
