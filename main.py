@@ -24,7 +24,6 @@ global chat_id_dict
 chat_id_dict = {}
 
 # Initialize a global dictionary to store prayer_times information
-global database_prayer_times
 database_prayer_times = {}
 
 # Define the menus
@@ -471,7 +470,7 @@ async def shutdown():
 async def main():
     while(True):
         try:
-            await cycleCheck(chat_id_dict, database_prayer_times)
+            await cycleCheck(chat_id_dict)#, database_prayer_times)
             print("Suspend")
             await asyncio.sleep(1)
         except Exception as e:
