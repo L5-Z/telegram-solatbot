@@ -1,6 +1,6 @@
 import logging
 import asyncio
-import telebot
+import telebot 
 from telebot import apihelper
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import *
@@ -24,7 +24,6 @@ global chat_id_dict
 chat_id_dict = {}
 
 # Initialize a global dictionary to store prayer_times information
-global database_prayer_times
 database_prayer_times = {}
 
 # Define the menus
@@ -349,7 +348,7 @@ async def timings_command(message):
 async def qiblat_info(message):
     await checker(message.chat.id)
     reply = "\U0001F54B _*Qiblat for Singapore:*_\n\n"
-    reply += "\U0001F9ED *293* degrees \[NW\]"
+    reply += "\U0001F9ED *293* degrees \\[NW\\]"
     # Send the message with qiblat directions
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
@@ -471,7 +470,7 @@ async def shutdown():
 async def main():
     while(True):
         try:
-            await cycleCheck(chat_id_dict, database_prayer_times)
+            await cycleCheck(chat_id_dict)#, database_prayer_times)
             print("Suspend")
             await asyncio.sleep(1)
         except Exception as e:

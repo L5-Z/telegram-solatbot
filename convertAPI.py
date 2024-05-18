@@ -11,6 +11,7 @@ from datetime import *
 from scrapeAPI import *
 from blocked import *
 from storage import save_data
+from main import database_prayer_times
 
 logger = logging.getLogger(__name__)
 
@@ -110,17 +111,18 @@ def convert_to_24_hour_format(time_str):
         logger.error(f"Error converting time to 24H format: {e}")
         return time_str  # Return the input unchanged if it's not in the expected format
 
-async def cycleCheck(chat_id_dict, database_prayer_times):
+async def cycleCheck(chat_id_dict):#, database_prayer_times):
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
 
     global upcoming_prayer_time
     global change_prayer_time
+    global database_prayer_times
     
     # Get raw prayer time data
     solatTimesRaw = database_prayer_times
-    if solatTimesRaw is None:
+    if solatTimesRaw is None or not solatTimesRaw:
         logger.error("Failed to retrieve prayer times from local database")
         database_prayer_times = await RefreshPrayerTime()
         return
@@ -128,11 +130,11 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
     
     # Update times
     AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
-    if now < AM_12 + timedelta(minutes=1) and now >= AM_12:
+    if now < AM_12 + timedelta(minutes=2) and now >= AM_12:
         logger.info("Updating Prayer Times")
         database_prayer_times = await RefreshPrayerTime()
         print("Updated: ", database_prayer_times)
-        await asyncio.sleep(14400)
+        await asyncio.sleep(17100)
         return
     
     # /daily command
@@ -149,6 +151,11 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
     if now < PM_9 + timedelta(hours=1) and now >= PM_9:
         logger.info("Entering deep sleep after 9:00 PM")
         await asyncio.sleep(7200)
+    # Set the target time to between 8:00 to 9:00 AM
+    AM_8 = now.replace(hour=8, minute=0, second=0, microsecond=0)
+    if now < AM_8 + timedelta(hours=1) and now >= AM_8:
+        logger.info("Entering deep sleep after 8:00 AM")
+        await asyncio.sleep(10800)
 
 
     # Filter data
