@@ -7,8 +7,10 @@ chat_ids.txt
 
 # Save File
 *.json
-C:\Users\L5Z\Desktop\VSC Projects\solatBot\telegram-solatbot\saveFile.json
 saveFile.json
 
 # App Log
 app.log
+
+# Docker Files
+compose-dev.yaml
