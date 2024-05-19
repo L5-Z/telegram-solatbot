@@ -9,6 +9,7 @@ from storage import *
 from scrapeAPI import *
 from convertAPI import *
 from blocked import *
+from donate import *
 
 # Bot token
 with open('botKey.txt', 'r') as file:
@@ -30,6 +31,7 @@ database_prayer_times = {}
 main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 toggle_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 info_menu = ReplyKeyboardMarkup(resize_keyboard=True)
+donate_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 
 # Main Menu buttons
 main_menu.row(KeyboardButton('Notifications'), KeyboardButton('Current Timings'))
@@ -37,8 +39,12 @@ main_menu.row(KeyboardButton('Settings'), KeyboardButton('Information'))
 main_menu.row(KeyboardButton('Help'))
 toggle_menu.row(KeyboardButton('Reminders'), KeyboardButton('Daily Updates'))
 toggle_menu.row(KeyboardButton('Back'))
-info_menu.row(KeyboardButton('Qiblat'), KeyboardButton('Zakat'))
+info_menu.row(KeyboardButton('Qiblat'), KeyboardButton('Donate'))
+info_menu.row(KeyboardButton('(Under Test)'), KeyboardButton('Zakat'))
 info_menu.row(KeyboardButton('Back'))
+donate_menu.row(KeyboardButton('North'), KeyboardButton('South'))
+donate_menu.row(KeyboardButton('East'), KeyboardButton('West'))
+donate_menu.row(KeyboardButton('Back'))
 
 # Command handler for the /menu command
 @sbot.message_handler(commands=['menu'])
@@ -70,6 +76,8 @@ async def handle_click(message):
         await qiblat_info(message)
     elif message.text == 'Zakat' or message.text == '/zakat':
         await zakat_info(message)
+    elif message.text == 'Donate' or message.text == '/donate':
+        await donate_info(message)
     elif '/announce' in message.text:
         await announce(message)
     elif '/add' in message.text:
@@ -89,6 +97,48 @@ async def handle_click(message):
     elif message.text == '/exit':
         await exitBot(message)
 
+# Handler for processing region menu button clicks
+@sbot.message_handler(func=lambda message: message.text in ['North', 'South', 'East', 'West'])
+async def handle_region_click(message):
+    region = message.text
+    await sbot.send_message(message.chat.id, f"You selected {region}. Please select an index value:")
+    
+    # Inline keyboard for index selection
+    inline_kb = InlineKeyboardMarkup(row_width=3)
+
+    mosques = await get_mosques(region)
+    if mosques:
+        response = f"\n\nMosques in {region.capitalize()}:\n"
+        for idx, mosque in enumerate(mosques):
+            response += f"{idx + 1}. {list(mosque.keys())[0]}\n"
+        response += "\nSelect the mosque index to get the QR code."
+
+        total = enumerate(mosques) + 1
+        for i in range(1, total):  # For all mosques
+            inline_kb.add(InlineKeyboardButton(str(i), callback_data=f'index_{region}_{i}'))
+
+    else:
+        response = "No mosques found in this region."
+
+    await sbot.send_message(message.chat.id, response, reply_markup=inline_kb)
+
+# Handler for processing index selection
+@sbot.callback_query_handler(func=lambda call: call.data.startswith('index_'))
+async def handle_index_selection(call):
+    data = call.data.split('_')
+    region = data[1]
+    index = data[2]
+
+    # Call the select_mosque function with the selected region and index
+    mosque, path = await select_mosque(region, index)
+    
+    # New message on selection
+    await call.answer(f"Selected {index} for {region} mosque: {mosque}")
+    
+    # Call the get_qr function with the path
+    qr_result = await get_qr(path)
+    
+    await sbot.send_message(call.message.chat.id, f"PayNow QR link for {mosque}:\n\n{qr_result}", reply_markup=donate_menu)
 
 
 # ADMIN FUNCTION (51719761): ANNOUNCEMENTS
@@ -351,6 +401,29 @@ async def qiblat_info(message):
     reply += "\U0001F9ED *293* degrees \\[NW\\]"
     # Send the message with qiblat directions
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+
+# /donate command handler
+@sbot.message_handler(regexp='donate')
+@sbot.message_handler(commands=['donate'])
+async def donate_info(message):
+    await checker(message.chat.id)
+
+    reply = "**__How Do I Donate?__**\n\n"
+
+    reply += "1. Open your preferred Mobile Banking App and navigate to the PayNow function.\n"
+    reply += "2. Select the function to scan a PayNow QR Code.\n"
+    reply += "3. Scan the QR Code in the link provided.\n"
+    reply += "4. Confirm that the account name/UEN number corresponds to the name of your selected mosque.\n"
+    reply += "5. Enter your intended donation amount and complete your donation.\n\n"
+
+    reply += "If you are viewing this on your mobile device, tap on the link. Press and hold on the QR Code to save the image to your phone.\n\n"
+
+    reply += "In the PayNow function in your Mobile Banking App, click on the option to access your images album and select the QR Code image that you have just saved."
+    
+    reply += "_powered by tabung.sg_"
+    # Send the message with the donate reply
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+    await sbot.send_message(message.chat.id, "Please select a region:", reply_markup=donate_menu)
 
 # /zakat command handler
 @sbot.message_handler(regexp='zakat')
