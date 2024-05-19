@@ -35,7 +35,7 @@ async def get_qr(path):
 # Function to return a selected mosque and its path
 async def select_mosque(region, index):
     region = region.lower()
-    selected_mosque = index - 1
+    selected_mosque = int(index) - 1
     if region in ['north', 'south', 'east', 'west']:
         mosques = await get_mosques(region)
         if mosques:
