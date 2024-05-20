@@ -68,9 +68,11 @@ async def handle_region_click(message):
             response += f"{idx + 1}. {list(mosque.keys())[0]}\n"
         response += "\nSelect the mosque index to get the QR code."
 
-        total = len(mosques) + 1
-        for i in range(1, total):  # For all mosques
-            inline_kb.add(InlineKeyboardButton(str(i), callback_data=f'index_{region}_{i}'))
+        # Create all buttons first
+        buttons = [InlineKeyboardButton(str(i), callback_data=f'index_{region}_{i}') for i in range(1, len(mosques) + 1)]
+        inline_kb.add(*buttons)  # Unpack the list of buttons with add method of InlineKeyboardMarkup
+
+        
 
     else:
         response = "No mosques found in this region."
