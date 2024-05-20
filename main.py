@@ -41,7 +41,7 @@ main_menu.row(KeyboardButton('Help'))
 toggle_menu.row(KeyboardButton('Reminders'), KeyboardButton('Daily Updates'))
 toggle_menu.row(KeyboardButton('Back'))
 info_menu.row(KeyboardButton('Qiblat'), KeyboardButton('Donate'))
-info_menu.row(KeyboardButton('(Under Test)'), KeyboardButton('Zakat'))
+info_menu.row(KeyboardButton('Feedback'), KeyboardButton('Zakat'))
 info_menu.row(KeyboardButton('Back'))
 donate_menu.row(KeyboardButton('North'), KeyboardButton('South'))
 donate_menu.row(KeyboardButton('East'), KeyboardButton('West'))
@@ -154,6 +154,8 @@ async def handle_click(message):
         await zakat_info(message)
     elif message.text == 'Donate' or message.text == '/donate':
         await donate_info(message)
+    elif message.text == 'Feedback' or message.text == '/feeback':
+        await feeback_form(message)
     elif '/announce' in message.text:
         await announce(message)
     elif '/add' in message.text:
@@ -433,6 +435,16 @@ async def qiblat_info(message):
     reply += "\U0001F9ED *293* degrees \\[NW\\]"
     reply += "\n\n\nAugmented Reality with Google: https://qiblafinder\.withgoogle\.com/"
     # Send the message with qiblat directions
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+
+# /feeback command handler
+@sbot.message_handler(regexp='feeback')
+@sbot.message_handler(commands=['feeback'])
+async def feeback_form(message):
+    await checker(message.chat.id)
+    reply = "\U0001F54B *__Feedback Form:*_\n\n"
+    reply += "https://forms\.gle/JhB5MdtFsiX7zYC78"
+    # Send the message with feedback form link
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
 # /donate command handler
