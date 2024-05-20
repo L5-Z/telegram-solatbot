@@ -94,8 +94,38 @@ async def handle_index_selection(call):
     
     # Call the get_qr function with the path
     qr_result = await get_qr(path)
+
+    # Mosque details
+    mosque_info = f"*__{mosque}__*\n"
+    mosque_info += await mosque_extract(path)
+
+    # Escape special characters like '-' using '\'
+    mosque_info = mosque_info.replace('-', r'\-')
+    mosque_info = mosque_info.replace('#', r'\#')
+    mosque_info = mosque_info.replace('.', r'\.')
+    mosque_info = mosque_info.replace('(', r'\(')
+    mosque_info = mosque_info.replace(')', r'\)')
+
+    # Escape special characters like '-' using '\'
+    mosque_replaced = mosque
+    mosque_replaced = mosque_replaced.replace('-', r'\-')
+    mosque_replaced = mosque_replaced.replace('.', r'\.')
+    mosque_replaced = mosque_replaced.replace('#', r'\#')
+    mosque_replaced = mosque_replaced.replace('(', r'\(')
+    mosque_replaced = mosque_replaced.replace(')', r'\)')
+
+    # Escape special characters like '-' using '\'
+    qr_result_formatted = qr_result
+    qr_result_formatted = qr_result_formatted.replace('-', r'\-')
+    qr_result_formatted = qr_result_formatted.replace('.', r'\.')
+    qr_result_formatted = qr_result_formatted.replace('#', r'\#')
+    qr_result_formatted = qr_result_formatted.replace('(', r'\(')
+    qr_result_formatted = qr_result_formatted.replace(')', r'\)')
+    qr_result_formatted = qr_result_formatted.replace('=', r'\=')
+    qr_result_formatted = qr_result_formatted.replace('_', r'\_')
     
-    await sbot.send_message(call.message.chat.id, f"PayNow QR link for {mosque}:\n\n{qr_result}", reply_markup=info_menu)
+    await sbot.send_message(call.message.chat.id, mosque_info, 'MarkdownV2')
+    await sbot.send_message(call.message.chat.id, f"*__PayNow QR link for {mosque_replaced}:__*\n\n{qr_result_formatted}", 'MarkdownV2', reply_markup=info_menu)
 
 # Handler for processing button clicks
 @sbot.message_handler(func=lambda message: True)
@@ -410,15 +440,15 @@ async def qiblat_info(message):
 async def donate_info(message):
     await checker(message.chat.id)
 
-    reply = "**__How Do I Donate?__**\n\n"
+    reply = "*__How Do I Donate?__*\n\n"
 
     reply += "1\. Open your preferred Mobile Banking App and navigate to the PayNow function\n"
     reply += "2\. Select the function to scan a PayNow QR Code\n"
     reply += "3\. Scan the QR Code in the link provided\n"
-    reply += "4\. Confirm that the account name/UEN number corresponds to the name of your selected mosque\n"
+    reply += "4\. Confirm that the account name/UEN number corresponds to the name of your selected mosque\. In the case it is not available, you may refer to the tabung\.sg link attached below the Mosque header\.\n"
     reply += "5\. Enter your intended donation amount and complete your donation\n\n"
 
-    reply += "If you are viewing this on your mobile device, tap on the link\. Press and hold on the QR Code to save the image to your phone\.\n\n"
+    reply += "If you are viewing this on your mobile device, tap on the *QR* link\. Press and hold on the QR Code to save the image to your phone\. You may also take a screenshot\.\n\n"
 
     reply += "In the PayNow function in your Mobile Banking App, click on the option to access your images album and select the QR Code image that you have just saved\."
     
