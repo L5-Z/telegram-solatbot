@@ -155,7 +155,7 @@ async def handle_click(message):
     elif message.text == 'Donate' or message.text == '/donate':
         await donate_info(message)
     elif message.text == 'Feedback' or message.text == '/feeback':
-        await feeback_form(message)
+        await feedback_form(message)
     elif '/announce' in message.text:
         await announce(message)
     elif '/add' in message.text:
@@ -440,9 +440,9 @@ async def qiblat_info(message):
 # /feeback command handler
 @sbot.message_handler(regexp='feeback')
 @sbot.message_handler(commands=['feeback'])
-async def feeback_form(message):
+async def feedback_form(message):
     await checker(message.chat.id)
-    reply = "\U0001F54B *__Feedback Form:*_\n\n"
+    reply = "\U0001F54B *__Feedback Form:__*\n\n"
     reply += "https://forms\.gle/JhB5MdtFsiX7zYC78"
     # Send the message with feedback form link
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
