@@ -442,7 +442,7 @@ async def qiblat_info(message):
 @sbot.message_handler(commands=['feeback'])
 async def feedback_form(message):
     await checker(message.chat.id)
-    reply = "\U0001F54B *__Feedback Form:__*\n\n"
+    reply = "*__Feedback Form:__*\n\n"
     reply += "https://forms\.gle/JhB5MdtFsiX7zYC78"
     # Send the message with feedback form link
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
