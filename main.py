@@ -431,6 +431,7 @@ async def qiblat_info(message):
     await checker(message.chat.id)
     reply = "\U0001F54B _*Qiblat for Singapore:*_\n\n"
     reply += "\U0001F9ED *293* degrees \\[NW\\]"
+    reply += "\n\n\nAugmented Reality with Google: https://qiblafinder\.withgoogle\.com/"
     # Send the message with qiblat directions
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
