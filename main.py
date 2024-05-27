@@ -7,7 +7,7 @@ from telebot.types import *
 
 from storage import *
 from scrapeAPI import *
-from convertAPI import *
+from cycle import *
 from blocked import *
 
 # Bot token
@@ -26,6 +26,15 @@ chat_id_dict = {}
 # Initialize a global dictionary to store prayer_times information
 global database_prayer_times
 database_prayer_times = {}
+
+# Initialize runtime arrays
+reminders_enabled_arr = []
+daily_enabled_arr = []
+custom_5_enabled_arr = []
+custom_10_enabled_arr = []
+custom_15_enabled_arr = []
+custom_20_enabled_arr = []
+custom_25_enabled_arr = []
 
 # Define the menus
 main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -150,6 +159,8 @@ async def addUser(message):
 # ADMIN FUNCTION (51719761): REMOVE USER
 @sbot.message_handler(commands=['del'])
 async def delUser(message):
+    global reminders_enabled_arr, daily_enabled_arr
+
     if message.chat.id == 51719761:
         remove_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
         print("\nAdmin is deleting user: ", remove_chat_id)
@@ -158,6 +169,10 @@ async def delUser(message):
 
         if remove_chat_id in chat_id_dict:
             chat_id_dict.pop(remove_chat_id, None)
+
+            # Remove the chat ID from the arrays
+            reminders_enabled_arr.remove(remove_chat_id)  # Remove from the array
+            daily_enabled_arr.remove(remove_chat_id)  # Remove from the array
         
         print("User: ", remove_chat_id, " has been deleted\n")
         await sbot.send_message(message.chat.id, notify)     
@@ -274,7 +289,7 @@ async def exitBot(message):
 
 # Check chat_id if present in dict
 async def checker(chat_id):
-    global chat_id_dict
+    global chat_id_dict, reminders_enabled_arr, daily_enabled_arr
 
     # Convert chat_id to string to ensure consistency
     chat_id = str(chat_id)
@@ -285,7 +300,13 @@ async def checker(chat_id):
             'daily_timings_enabled': True,
             'custom_durations': [False, False, False, False, False], # Time for 5, 10, 15, 20, 30
         }
+
         await save_data(chat_id_dict)
+
+        # Add the new chat ID to the arrays
+        reminders_enabled_arr.append(chat_id)
+        daily_enabled_arr.append(chat_id)
+
         logger.info(f"Saved {chat_id} to database.")
         await sbot.send_message('51719761', f"Admin New User Joined: {chat_id}")
 
@@ -366,6 +387,7 @@ async def zakat_info(message):
 @sbot.message_handler(regexp='daily')
 @sbot.message_handler(commands=['daily'])
 async def daily_command(message):
+    global daily_enabled_arr
     await checker(message.chat.id)
 
     chat_id = str(message.chat.id)
@@ -375,8 +397,10 @@ async def daily_command(message):
     chat_info['daily_timings_enabled'] = daily_timings_enabled
 
     if daily_timings_enabled:
+        daily_enabled_arr.append(chat_id)  # Add to the array
         await sbot.send_message(message.chat.id, "Daily Prayer Times are now enabled. \u2705")
     else:
+        daily_enabled_arr.remove(chat_id)  # Remove from the array
         await sbot.send_message(message.chat.id, "Daily Prayer Times are now disabled. \u274c")
 
 
@@ -385,6 +409,7 @@ async def daily_command(message):
 @sbot.message_handler(regexp='toggle')
 @sbot.message_handler(commands=['toggle'])
 async def toggle_command(message):
+    global reminders_enabled_arr
     await checker(message.chat.id)
 
     chat_id = str(message.chat.id)
@@ -395,8 +420,10 @@ async def toggle_command(message):
     chat_info['reminders_enabled'] = reminders_enabled
 
     if reminders_enabled:
+        reminders_enabled_arr.append(chat_id)  # Add to the array
         await sbot.send_message(message.chat.id, "Azan reminders are now enabled. \u2705")
     else:
+        reminders_enabled_arr.remove(chat_id)  # Remove from the array
         await sbot.send_message(message.chat.id, "Azan reminders are now disabled. \u274c")
 
 
@@ -460,6 +487,32 @@ async def patch_command(message):
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
 
+# Populate the arrays based on the loaded data
+def NonAsync_loadArr(chat_id_dict):
+    reminders_enabled_arr = []
+    daily_enabled_arr = []
+    for chat_id, chat_data in chat_id_dict.items():
+        if chat_data.get('reminders_enabled', True):
+            reminders_enabled_arr.append(chat_id)
+        if chat_data.get('daily_timings_enabled', True):
+            daily_enabled_arr.append(chat_id)
+    
+    return [reminders_enabled_arr, daily_enabled_arr]
+
+
+ # Populate the arrays based on the loaded data
+async def loadArr(chat_id_dict):
+    reminders_enabled_arr = []
+    daily_enabled_arr = []
+    for chat_id, chat_data in chat_id_dict.items():
+        if chat_data.get('reminders_enabled', True):
+            reminders_enabled_arr.append(chat_id)
+        if chat_data.get('daily_timings_enabled', True):
+            daily_enabled_arr.append(chat_id)
+    
+    return [reminders_enabled_arr, daily_enabled_arr]
+
+
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
     # Save data before shutdown
@@ -471,7 +524,11 @@ async def shutdown():
 async def main():
     while(True):
         try:
+<<<<<<< Updated upstream
             await cycleCheck(chat_id_dict, database_prayer_times)
+=======
+            await cycleCheck(chat_id_dict)
+>>>>>>> Stashed changes
             print("Suspend")
             await asyncio.sleep(1)
         except Exception as e:
@@ -498,6 +555,7 @@ if __name__ == '__main__':
     print("User profiles have been loaded")
     logger.info("User profiles have been loaded")
     database_prayer_times = NonAsync_RefreshPrayerTime()
+    reminders_enabled_arr, daily_enabled_arr = NonAsync_loadArr()
     print("Prayer Times have been loaded")
     logger.info("Prayer Times have been loaded")
 

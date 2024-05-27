@@ -1,4 +1,5 @@
 # Converts solat times into 24-hour format in SGT and handles time based events
+import re
 import pytz
 import datetime
 import logging
@@ -10,6 +11,7 @@ from datetime import *
 from scrapeAPI import *
 from blocked import *
 from storage import save_data
+from main import database_prayer_times, reminders_enabled_arr, daily_enabled_arr, loadArr
 
 logger = logging.getLogger(__name__)
 
@@ -73,11 +75,27 @@ async def scheduleRun(chat_id_dict):
     for chat_id, chat_info in chat_id_dict.items():
         if chat_info['daily_timings_enabled']:
 
-            # fetch formatted times
-            times_text = await printTimes()
+            try:
+                    # Try to send the reminder to check if the bot is blocked
+                    # fetch formatted times
+                    times_text = await printTimes()
 
-            # Send message
-            await sbot.send_message(chat_id, times_text, 'MarkdownV2')
+                    # Send message
+                    await sbot.send_message(chat_id, times_text, 'MarkdownV2')
+                    logger.info(f"Sent daily reminder to {chat_id}")
+                    print("sent reminder", chat_id)
+            except telebot.apihelper.ApiException as e:
+                if "bot was blocked by the user" in e.result.text: # e.result.status_code == 403 and 
+                    logger.warning(f"Bot was blocked by user {chat_id}")
+                    print(f"\n\nBot was blocked by user {chat_id}\n\n")
+                    blocked_users.append(chat_id)
+                    chat_id_dict.pop(chat_id, None)
+                    print("Removed blocker: ", chat_id, "\n\n")
+                    logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+                else:
+                    logger.error(f"An error occurred in sending reminders: {e}")
+            finally:
+                continue
 
     await save_data(chat_id_dict)
     logger.info(f"Updated database.")
@@ -93,27 +111,44 @@ def convert_to_24_hour_format(time_str):
         logger.error(f"Error converting time to 24H format: {e}")
         return time_str  # Return the input unchanged if it's not in the expected format
 
-async def cycleCheck(chat_id_dict, database_prayer_times):
+
+
+async def cycleCheck(chat_id_dict):
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
 
-    global upcoming_prayer_time
-    global change_prayer_time
+    global upcoming_prayer_time, change_prayer_time
+    global database_prayer_times
+    global reminders_enabled_arr, daily_enabled_arr
     
     # Get raw prayer time data
     solatTimesRaw = database_prayer_times
-    if solatTimesRaw is None:
+    if solatTimesRaw is None or not solatTimesRaw:
         logger.error("Failed to retrieve prayer times from local database")
-        await RefreshPrayerTime()
+        database_prayer_times = await RefreshPrayerTime()
         return
+    print("RAW:", solatTimesRaw)
+
+    # Check reminder array
+    # Check daily array
+    reminders_arr = reminders_enabled_arr
+    daily_arr = daily_enabled_arr
+    if reminders_arr is None or not reminders_arr or daily_arr is None or not daily_arr:
+        logger.error("Failed to retrieve runtime reminder/daily array from local database")
+        reminders_enabled_arr, daily_enabled_arr = await loadArr()
+        return
+    print("reminders_arr:", reminders_arr)
+    print("daily_arr:", daily_arr)
     
     # Update times
-    AM_12 = now.replace(hour=0, minute=5, second=0, microsecond=0)
-    if now < AM_12 + timedelta(minutes=1) and now >= AM_12:
+    AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
+    if now < AM_12 + timedelta(minutes=2) and now >= AM_12:
         logger.info("Updating Prayer Times")
-        await RefreshPrayerTime()
-        await asyncio.sleep(14400)
+        database_prayer_times = await RefreshPrayerTime()
+        print("Updated: ", database_prayer_times)
+        await asyncio.sleep(17100)
+        return
     
     # /daily command
     # Set the target time to 5:00 AM
@@ -121,6 +156,7 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
     if now < AM_5 + timedelta(minutes=1) and now >= AM_5:
         logger.info("Sending daily prayer times at 5:00 AM")
         await scheduleRun(chat_id_dict)
+        await asyncio.sleep(61)
 
     # Resource Preservation
     # Set the target time to between 9:00 to 10:00 PM
@@ -128,6 +164,11 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
     if now < PM_9 + timedelta(hours=1) and now >= PM_9:
         logger.info("Entering deep sleep after 9:00 PM")
         await asyncio.sleep(7200)
+    # Set the target time to between 8:00 to 9:00 AM
+    AM_8 = now.replace(hour=8, minute=0, second=0, microsecond=0)
+    if now < AM_8 + timedelta(hours=1) and now >= AM_8:
+        logger.info("Entering deep sleep after 8:00 AM")
+        await asyncio.sleep(10800)
 
 
     # Filter data
@@ -143,6 +184,7 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
 
     # Convert prayer times to 24-hour format in SGT, excluding 'PrayerDate'
     solatTimesFormatted = {prayer: convert_to_24_hour_format(time) for prayer, time in solatTimesAMPM.items()}
+
     # Extract the date value and convert it to a datetime object
     prayer_date_str = dateCalendar.get('PrayerDate', '')  # Use the calendar dictionary here
     prayer_date_format = '%d %B %Y'  # Define the format of the date string
@@ -201,13 +243,16 @@ async def cycleCheck(chat_id_dict, database_prayer_times):
                     print("sent reminder", chat_id)
                     change_prayer_time = upcoming_prayer_time
                 except telebot.apihelper.ApiException as e:
-                    if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
+                    if "bot was blocked by the user" in e.result.text: # e.result.status_code == 403 and 
                         logger.warning(f"Bot was blocked by user {chat_id}")
                         print(f"\n\nBot was blocked by user {chat_id}\n\n")
                         blocked_users.append(chat_id)
                         chat_id_dict.pop(chat_id, None)
                         print("Removed blocker: ", chat_id, "\n\n")
                         logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+
+                        await save_data(chat_id_dict)
+                        logger.info(f"Updated database.")
                     else:
                         logger.error(f"An error occurred in sending reminders: {e}")
                 finally:
