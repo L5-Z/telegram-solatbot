@@ -523,15 +523,7 @@ async def shutdown():
 async def main():
     while(True):
         try:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-            await cycleCheck(chat_id_dict, database_prayer_times)
-=======
             await cycleCheck(chat_id_dict)
->>>>>>> Stashed changes
-=======
-            await cycleCheck(chat_id_dict)#, database_prayer_times)
->>>>>>> 2f768ed9a8654f5b8b0da2310d5acb80b91a9865
             print("Suspend")
             await asyncio.sleep(1)
         except Exception as e:

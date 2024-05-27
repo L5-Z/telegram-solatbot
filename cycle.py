@@ -11,11 +11,7 @@ from datetime import *
 from scrapeAPI import *
 from blocked import *
 from storage import save_data
-<<<<<<< HEAD:cycle.py
 from main import database_prayer_times, reminders_enabled_arr, daily_enabled_arr, loadArr
-=======
-from main import database_prayer_times
->>>>>>> 2f768ed9a8654f5b8b0da2310d5acb80b91a9865:convertAPI.py
 
 logger = logging.getLogger(__name__)
 
@@ -115,26 +111,16 @@ def convert_to_24_hour_format(time_str):
         logger.error(f"Error converting time to 24H format: {e}")
         return time_str  # Return the input unchanged if it's not in the expected format
 
-<<<<<<< HEAD:cycle.py
 
 
 async def cycleCheck(chat_id_dict):
-=======
-async def cycleCheck(chat_id_dict):#, database_prayer_times):
->>>>>>> 2f768ed9a8654f5b8b0da2310d5acb80b91a9865:convertAPI.py
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
 
-<<<<<<< HEAD:cycle.py
     global upcoming_prayer_time, change_prayer_time
     global database_prayer_times
     global reminders_enabled_arr, daily_enabled_arr
-=======
-    global upcoming_prayer_time
-    global change_prayer_time
-    global database_prayer_times
->>>>>>> 2f768ed9a8654f5b8b0da2310d5acb80b91a9865:convertAPI.py
     
     # Get raw prayer time data
     solatTimesRaw = database_prayer_times
@@ -143,7 +129,6 @@ async def cycleCheck(chat_id_dict):#, database_prayer_times):
         database_prayer_times = await RefreshPrayerTime()
         return
     print("RAW:", solatTimesRaw)
-<<<<<<< HEAD:cycle.py
 
     # Check reminder array
     # Check daily array
@@ -155,8 +140,6 @@ async def cycleCheck(chat_id_dict):#, database_prayer_times):
         return
     print("reminders_arr:", reminders_arr)
     print("daily_arr:", daily_arr)
-=======
->>>>>>> 2f768ed9a8654f5b8b0da2310d5acb80b91a9865:convertAPI.py
     
     # Update times
     AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
