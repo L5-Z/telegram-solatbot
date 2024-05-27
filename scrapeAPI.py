@@ -45,33 +45,37 @@ def NonAsync_GetPrayerTime():
 # ASYNC Function to save prayer times from the website to a local dict
 async def RefreshPrayerTime():
   database_prayer_times = await GetPrayerTime()
+  logger.info("Succesfully updated Prayer Times")
   return database_prayer_times
 
 # Function to save prayer times from the website to a local dict
 def NonAsync_RefreshPrayerTime():
   database_prayer_times = NonAsync_GetPrayerTime()
+  logger.info("Succesfully updated Prayer Times")
   return database_prayer_times
     
 # Function to manually add AM/PM based on prayer type
 def formatTimes(input_dict):
+
   for prayer, time in input_dict.items():
-    if prayer in ("Subuh", "Syuruk"):
+    if prayer in ("Subuh", "Syuruk") and "AM" not in time and "PM" not in time:
       input_dict[prayer] = f"{time} AM"
-    else:
+    elif prayer in ("Zohor", "Asar", "Maghrib", "Isyak") and "AM" not in time and "PM" not in time:
       input_dict[prayer] = f"{time} PM"
   return input_dict
 
 
 def filterInput(input_dict):
   date_dict = {}
+  time_dict = input_dict.copy() if input_dict else None
 
-  if input_dict is not None:
-    if 'Hijri' in input_dict:
-      date_dict['Hijri'] = input_dict.pop('Hijri')
-    if 'PrayerDate' in input_dict:
-      date_dict['PrayerDate'] = input_dict.pop('PrayerDate')
+  if time_dict is not None:
+    if 'Hijri' in time_dict:
+      date_dict['Hijri'] = time_dict.pop('Hijri')
+    if 'PrayerDate' in time_dict:
+      date_dict['PrayerDate'] = time_dict.pop('PrayerDate')
 
-    return [input_dict, date_dict]
+    return [time_dict, date_dict]
   else:
     logger.warning("Failed to filter data.")
     return None
