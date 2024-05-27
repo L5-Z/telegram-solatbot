@@ -3,12 +3,14 @@ import asyncio
 import telebot 
 from telebot import apihelper
 from telebot.async_telebot import AsyncTeleBot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from telebot.types import *
 
 from storage import *
 from scrapeAPI import *
-from convertAPI import *
+from cycle import *
 from blocked import *
+from donate import *
 
 # Bot token
 with open('botKey.txt', 'r') as file:
@@ -26,10 +28,20 @@ chat_id_dict = {}
 # Initialize a global dictionary to store prayer_times information
 database_prayer_times = {}
 
+# Initialize runtime arrays
+reminders_enabled_arr = []
+daily_enabled_arr = []
+custom_5_enabled_arr = []
+custom_10_enabled_arr = []
+custom_15_enabled_arr = []
+custom_20_enabled_arr = []
+custom_25_enabled_arr = []
+
 # Define the menus
 main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 toggle_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 info_menu = ReplyKeyboardMarkup(resize_keyboard=True)
+donate_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 
 # Main Menu buttons
 main_menu.row(KeyboardButton('Notifications'), KeyboardButton('Current Timings'))
@@ -37,13 +49,92 @@ main_menu.row(KeyboardButton('Settings'), KeyboardButton('Information'))
 main_menu.row(KeyboardButton('Help'))
 toggle_menu.row(KeyboardButton('Reminders'), KeyboardButton('Daily Updates'))
 toggle_menu.row(KeyboardButton('Back'))
-info_menu.row(KeyboardButton('Qiblat'), KeyboardButton('Zakat'))
+info_menu.row(KeyboardButton('Qiblat'), KeyboardButton('Donate'))
+info_menu.row(KeyboardButton('Feedback'), KeyboardButton('Zakat'))
 info_menu.row(KeyboardButton('Back'))
+donate_menu.row(KeyboardButton('North'), KeyboardButton('South'))
+donate_menu.row(KeyboardButton('East'), KeyboardButton('West'))
+donate_menu.row(KeyboardButton('Back'))
 
 # Command handler for the /menu command
 @sbot.message_handler(commands=['menu'])
 async def send_menu(message):
     await sbot.send_message(message.chat.id, "Please select an option:", reply_markup=main_menu)
+
+# Handler for processing region menu button clicks
+@sbot.message_handler(func=lambda message: message.text in ['North', 'South', 'East', 'West'])
+async def handle_region_click(message):
+    region = message.text
+    await sbot.send_message(message.chat.id, f"You selected {region}. Please select an index value:")
+    
+    # Inline keyboard for index selection
+    inline_kb = InlineKeyboardMarkup(row_width=3)
+
+    mosques = await get_mosques(region)
+    if mosques:
+        response = f"\n\nMosques in {region.capitalize()}:\n"
+        for idx, mosque in enumerate(mosques):
+            response += f"{idx + 1}. {list(mosque.keys())[0]}\n"
+        response += "\nSelect the mosque index to get the QR code."
+
+        # Create all buttons first
+        buttons = [InlineKeyboardButton(str(i), callback_data=f'index_{region}_{i}') for i in range(1, len(mosques) + 1)]
+        inline_kb.add(*buttons)  # Unpack the list of buttons with add method of InlineKeyboardMarkup
+
+        
+
+    else:
+        response = "No mosques found in this region."
+
+    await sbot.send_message(message.chat.id, response, reply_markup=inline_kb)
+
+# Handler for processing index selection
+@sbot.callback_query_handler(func=lambda call: call.data.startswith('index_'))
+async def handle_index_selection(call):
+    data = call.data.split('_')
+    region = data[1]
+    index = data[2]
+
+    # Call the select_mosque function with the selected region and index
+    mosque, path = await select_mosque(region, index)
+    
+    # New message on selection
+    await sbot.answer_callback_query(call.id,f"Selected {index} for {region} mosque: {mosque}")
+    
+    # Call the get_qr function with the path
+    qr_result = await get_qr(path)
+
+    # Mosque details
+    mosque_info = f"*__{mosque}__*\n"
+    mosque_info += await mosque_extract(path)
+
+    # Escape special characters like '-' using '\'
+    mosque_info = mosque_info.replace('-', r'\-')
+    mosque_info = mosque_info.replace('#', r'\#')
+    mosque_info = mosque_info.replace('.', r'\.')
+    mosque_info = mosque_info.replace('(', r'\(')
+    mosque_info = mosque_info.replace(')', r'\)')
+
+    # Escape special characters like '-' using '\'
+    mosque_replaced = mosque
+    mosque_replaced = mosque_replaced.replace('-', r'\-')
+    mosque_replaced = mosque_replaced.replace('.', r'\.')
+    mosque_replaced = mosque_replaced.replace('#', r'\#')
+    mosque_replaced = mosque_replaced.replace('(', r'\(')
+    mosque_replaced = mosque_replaced.replace(')', r'\)')
+
+    # Escape special characters like '-' using '\'
+    qr_result_formatted = qr_result
+    qr_result_formatted = qr_result_formatted.replace('-', r'\-')
+    qr_result_formatted = qr_result_formatted.replace('.', r'\.')
+    qr_result_formatted = qr_result_formatted.replace('#', r'\#')
+    qr_result_formatted = qr_result_formatted.replace('(', r'\(')
+    qr_result_formatted = qr_result_formatted.replace(')', r'\)')
+    qr_result_formatted = qr_result_formatted.replace('=', r'\=')
+    qr_result_formatted = qr_result_formatted.replace('_', r'\_')
+    
+    await sbot.send_message(call.message.chat.id, mosque_info, 'MarkdownV2')
+    await sbot.send_message(call.message.chat.id, f"*__PayNow QR link for {mosque_replaced}:__*\n\n{qr_result_formatted}", 'MarkdownV2', reply_markup=info_menu)
 
 # Handler for processing button clicks
 @sbot.message_handler(func=lambda message: True)
@@ -70,6 +161,10 @@ async def handle_click(message):
         await qiblat_info(message)
     elif message.text == 'Zakat' or message.text == '/zakat':
         await zakat_info(message)
+    elif message.text == 'Donate' or message.text == '/donate':
+        await donate_info(message)
+    elif message.text == 'Feedback' or message.text == '/feeback':
+        await feedback_form(message)
     elif '/announce' in message.text:
         await announce(message)
     elif '/add' in message.text:
@@ -88,8 +183,6 @@ async def handle_click(message):
         await blockedUsers(message)
     elif message.text == '/exit':
         await exitBot(message)
-
-
 
 # ADMIN FUNCTION (51719761): ANNOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
@@ -149,6 +242,8 @@ async def addUser(message):
 # ADMIN FUNCTION (51719761): REMOVE USER
 @sbot.message_handler(commands=['del'])
 async def delUser(message):
+    global reminders_enabled_arr, daily_enabled_arr
+
     if message.chat.id == 51719761:
         remove_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
         print("\nAdmin is deleting user: ", remove_chat_id)
@@ -157,6 +252,10 @@ async def delUser(message):
 
         if remove_chat_id in chat_id_dict:
             chat_id_dict.pop(remove_chat_id, None)
+
+            # Remove the chat ID from the arrays
+            reminders_enabled_arr.remove(remove_chat_id)  # Remove from the array
+            daily_enabled_arr.remove(remove_chat_id)  # Remove from the array
         
         print("User: ", remove_chat_id, " has been deleted\n")
         await sbot.send_message(message.chat.id, notify)     
@@ -273,7 +372,7 @@ async def exitBot(message):
 
 # Check chat_id if present in dict
 async def checker(chat_id):
-    global chat_id_dict
+    global chat_id_dict, reminders_enabled_arr, daily_enabled_arr
 
     # Convert chat_id to string to ensure consistency
     chat_id = str(chat_id)
@@ -284,7 +383,13 @@ async def checker(chat_id):
             'daily_timings_enabled': True,
             'custom_durations': [False, False, False, False, False], # Time for 5, 10, 15, 20, 30
         }
+
         await save_data(chat_id_dict)
+
+        # Add the new chat ID to the arrays
+        reminders_enabled_arr.append(chat_id)
+        daily_enabled_arr.append(chat_id)
+
         logger.info(f"Saved {chat_id} to database.")
         await sbot.send_message('51719761', f"Admin New User Joined: {chat_id}")
 
@@ -349,8 +454,42 @@ async def qiblat_info(message):
     await checker(message.chat.id)
     reply = "\U0001F54B _*Qiblat for Singapore:*_\n\n"
     reply += "\U0001F9ED *293* degrees \\[NW\\]"
+    reply += "\n\n\nAugmented Reality with Google: https://qiblafinder\.withgoogle\.com/"
     # Send the message with qiblat directions
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+
+# /feedback command handler
+@sbot.message_handler(regexp='feedback')
+@sbot.message_handler(commands=['feedback'])
+async def feedback_form(message):
+    await checker(message.chat.id)
+    reply = "*__Feedback Form:__*\n\n"
+    reply += "https://forms\.gle/JhB5MdtFsiX7zYC78"
+    # Send the message with feedback form link
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+
+# /donate command handler
+@sbot.message_handler(regexp='donate')
+@sbot.message_handler(commands=['donate'])
+async def donate_info(message):
+    await checker(message.chat.id)
+
+    reply = "*__How Do I Donate?__*\n\n"
+
+    reply += "1\. Open your preferred Mobile Banking App and navigate to the PayNow function\n"
+    reply += "2\. Select the function to scan a PayNow QR Code\n"
+    reply += "3\. Scan the QR Code in the link provided\n"
+    reply += "4\. Confirm that the account name/UEN number corresponds to the name of your selected mosque\. In the case it is not available, you may refer to the tabung\.sg link attached below the Mosque header\.\n"
+    reply += "5\. Enter your intended donation amount and complete your donation\n\n"
+
+    reply += "If you are viewing this on your mobile device, tap on the *QR* link\. Press and hold on the QR Code to save the image to your phone\. You may also take a screenshot\.\n\n"
+
+    reply += "In the PayNow function in your Mobile Banking App, click on the option to access your images album and select the QR Code image that you have just saved\."
+    
+    reply += "\n\n\n_powered by tabung\.sg_"
+    # Send the message with the donate reply
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+    await sbot.send_message(message.chat.id, "Please select a region:", reply_markup=donate_menu)
 
 # /zakat command handler
 @sbot.message_handler(regexp='zakat')
@@ -365,6 +504,7 @@ async def zakat_info(message):
 @sbot.message_handler(regexp='daily')
 @sbot.message_handler(commands=['daily'])
 async def daily_command(message):
+    global daily_enabled_arr
     await checker(message.chat.id)
 
     chat_id = str(message.chat.id)
@@ -374,8 +514,10 @@ async def daily_command(message):
     chat_info['daily_timings_enabled'] = daily_timings_enabled
 
     if daily_timings_enabled:
+        daily_enabled_arr.append(chat_id)  # Add to the array
         await sbot.send_message(message.chat.id, "Daily Prayer Times are now enabled. \u2705")
     else:
+        daily_enabled_arr.remove(chat_id)  # Remove from the array
         await sbot.send_message(message.chat.id, "Daily Prayer Times are now disabled. \u274c")
 
 
@@ -384,6 +526,7 @@ async def daily_command(message):
 @sbot.message_handler(regexp='toggle')
 @sbot.message_handler(commands=['toggle'])
 async def toggle_command(message):
+    global reminders_enabled_arr
     await checker(message.chat.id)
 
     chat_id = str(message.chat.id)
@@ -394,8 +537,10 @@ async def toggle_command(message):
     chat_info['reminders_enabled'] = reminders_enabled
 
     if reminders_enabled:
+        reminders_enabled_arr.append(chat_id)  # Add to the array
         await sbot.send_message(message.chat.id, "Azan reminders are now enabled. \u2705")
     else:
+        reminders_enabled_arr.remove(chat_id)  # Remove from the array
         await sbot.send_message(message.chat.id, "Azan reminders are now disabled. \u274c")
 
 
@@ -459,6 +604,32 @@ async def patch_command(message):
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
 
+# Populate the arrays based on the loaded data
+def NonAsync_loadArr(chat_id_dict):
+    reminders_enabled_arr = []
+    daily_enabled_arr = []
+    for chat_id, chat_data in chat_id_dict.items():
+        if chat_data.get('reminders_enabled', True):
+            reminders_enabled_arr.append(chat_id)
+        if chat_data.get('daily_timings_enabled', True):
+            daily_enabled_arr.append(chat_id)
+    
+    return [reminders_enabled_arr, daily_enabled_arr]
+
+
+ # Populate the arrays based on the loaded data
+async def loadArr(chat_id_dict):
+    reminders_enabled_arr = []
+    daily_enabled_arr = []
+    for chat_id, chat_data in chat_id_dict.items():
+        if chat_data.get('reminders_enabled', True):
+            reminders_enabled_arr.append(chat_id)
+        if chat_data.get('daily_timings_enabled', True):
+            daily_enabled_arr.append(chat_id)
+    
+    return [reminders_enabled_arr, daily_enabled_arr]
+
+
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
     # Save data before shutdown
@@ -470,7 +641,7 @@ async def shutdown():
 async def main():
     while(True):
         try:
-            await cycleCheck(chat_id_dict)#, database_prayer_times)
+            await cycleCheck(chat_id_dict)
             print("Suspend")
             await asyncio.sleep(1)
         except Exception as e:
@@ -497,6 +668,7 @@ if __name__ == '__main__':
     print("User profiles have been loaded")
     logger.info("User profiles have been loaded")
     database_prayer_times = NonAsync_RefreshPrayerTime()
+    reminders_enabled_arr, daily_enabled_arr = NonAsync_loadArr()
     print("Prayer Times have been loaded")
     logger.info("Prayer Times have been loaded")
 
