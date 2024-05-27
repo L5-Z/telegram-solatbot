@@ -437,9 +437,9 @@ async def qiblat_info(message):
     # Send the message with qiblat directions
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
-# /feeback command handler
-@sbot.message_handler(regexp='feeback')
-@sbot.message_handler(commands=['feeback'])
+# /feedback command handler
+@sbot.message_handler(regexp='feedback')
+@sbot.message_handler(commands=['feedback'])
 async def feedback_form(message):
     await checker(message.chat.id)
     reply = "*__Feedback Form:__*\n\n"
