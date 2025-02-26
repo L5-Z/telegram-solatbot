@@ -1,5 +1,4 @@
 # Converts solat times into 24-hour format in SGT and handles time based events
-import re
 import pytz
 import datetime
 import logging
@@ -39,7 +38,7 @@ custom_timezone = pytz.FixedOffset(480) # Default 480 for SG, 450 for 7h:30mins 
 # Function to format reminder text
 async def format_reminder(chat_id, prayer, masa):
     masa = masa[:5]
-prayer = prayer.capitalize()
+    prayer = prayer.capitalize()
     try:
         dt = datetime.strptime(masa, '%H:%M')
         masa = dt.strftime('%I:%M %p')
