@@ -181,12 +181,9 @@ async def handle_click(message):
         await updateDB(message)
     elif message.text == '/blocked':
         await blockedUsers(message)
-    elif message.text == '/start':
-        await start_command(message)
     elif message.text == '/exit':
         await exitBot(message)
-    elif message.text == '/start':
-        await start_command(message)
+
 
 # ADMIN FUNCTION (51719761): ANNOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
