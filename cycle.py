@@ -204,7 +204,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
     dateCalendar = filtered_data[1] # Only dates Islamic, Roman
     
 
-    dateToday = datetime.now(sg_timezone)
+    dateToday = datetime.now()
     
     # Find the nearest upcoming prayer time
     for prayer, masa in solatTimes.items():
