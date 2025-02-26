@@ -5,7 +5,6 @@ import logging
 import asyncio
 
 from telebot.async_telebot import AsyncTeleBot
-from datetime import *
 from typing import List
 
 from scrapeAPI import *
@@ -210,9 +209,11 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
     for prayer, masa in solatTimes.items():
 
         try:
-            masa_trimmed = masa[:5]
-            # Convert the masa time to a datetime object
-            masa_time = datetime.strptime(masa_trimmed, '%H:%M')
+
+            # Convert AM/PM time to 24-hour format datetime object
+            masa_time = datetime.strptime(masa, "%I:%M %p")
+
+            # print(f"{prayer}: {masa} -> {masa_time}")  # Debug Output
         except ValueError:
             logger.warning(f"Invalid time format, masa: {masa}")
             continue
@@ -230,7 +231,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
         upcoming_prayer_name = prayer
 
         # Reduce CPU Load, fast return
-        if (prayer == 'Isyak') and now > this_prayer_time + timedelta(minutes=1) and now <= new_day:
+        if (prayer == 'isyak') and now > this_prayer_time + timedelta(minutes=1) and now <= new_day:
             print ("Returning: ", now)
             return
 
