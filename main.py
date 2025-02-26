@@ -145,7 +145,7 @@ async def handle_click(message):
         await timings_command(message)
     elif message.text == 'Notifications':
         await sbot.send_message(message.chat.id, "Edit your notification settings:", reply_markup=toggle_menu)
-    elif message.text == 'Help' or message.text == '/help':
+    elif message.text == 'Help' or '/help' in message.text:
         await help_command(message)
     elif message.text == 'Reminders' or message.text == '/toggle':
         await toggle_command(message)
@@ -183,7 +183,10 @@ async def handle_click(message):
         await blockedUsers(message)
     elif message.text == '/exit':
         await exitBot(message)
-
+    elif message.text == '/start':
+        await start_command(message)
+    elif message.text == '/menu_off':
+        await menu_off_command(message)
 
 # ADMIN FUNCTION (51719761): ANNOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
@@ -544,7 +547,13 @@ async def toggle_command(message):
         reminders_enabled_arr.remove(chat_id)  # Remove from the array
         await sbot.send_message(message.chat.id, "Azan reminders are now disabled. \u274c")
 
-
+# /menu_off command handler
+@sbot.message_handler(regexp='menu_off')
+@sbot.message_handler(commands=['menu_off'])
+async def menu_off_command(message):
+    await checker(message.chat.id)
+    reply = "Menu is disabled"
+    await sbot.send_message(message.chat.id, reply)
 
 # /help command handler
 @sbot.message_handler(regexp='help')
@@ -554,6 +563,7 @@ async def help_command(message):
   # List of available commands
   commands = [
       "/menu - Displays menu buttons",
+      "/menu_off - Disables menu buttons",
       "/settings - Displays current notification settings",
       "/toggle - Toggle reminders on or off",
       "/timings - Get current prayer times",
