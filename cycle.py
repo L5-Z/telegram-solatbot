@@ -196,40 +196,29 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
 
     
     # Filter data
-    filtered_data = filterInput(solatTimesRaw)
+    filtered_data = formatData(solatTimesRaw)
     if filtered_data is None:
         logger.error("Failed to filter prayer time data in filtered_data")
         return
     solatTimes = filtered_data[0] # Only prayer times
     dateCalendar = filtered_data[1] # Only dates Islamic, Roman
     
-    # Add AM/PM indications based on prayer type
-    solatTimesAMPM = formatTimes(solatTimes)
 
-    # Convert prayer times to 24-hour format in SGT, excluding 'PrayerDate'
-    solatTimesFormatted = {prayer: convert_to_24_hour_format(time) for prayer, time in solatTimesAMPM.items()}
-
-    # Extract the date value and convert it to a datetime object
-    prayer_date_str = dateCalendar.get('PrayerDate', '')  # Use the calendar dictionary here
-    prayer_date_format = '%d %B %Y'  # Define the format of the date string
-    try:
-        solatDateFormatted = datetime.strptime(prayer_date_str, prayer_date_format)
-    except ValueError:
-        logger.error(f"Invalid date format, prayer_date_str: {prayer_date_str}")
-        return
+    dateToday = datetime.now(sg_timezone)
     
     # Find the nearest upcoming prayer time
-    for prayer, masa in solatTimesFormatted.items():
+    for prayer, masa in solatTimes.items():
 
         try:
+            masa_trimmed = masa[:5]
             # Convert the masa time to a datetime object
-            masa_time = datetime.strptime(masa, '%H:%M')
+            masa_time = datetime.strptime(masa_trimmed, '%H:%M')
         except ValueError:
             logger.warning(f"Invalid time format, masa: {masa}")
             continue
 
         # Combine the date and time
-        this_prayer_time = solatDateFormatted.replace(
+        this_prayer_time = dateToday.replace(
             hour=masa_time.hour,
             minute=masa_time.minute,
             second=0,
