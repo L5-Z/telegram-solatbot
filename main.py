@@ -181,6 +181,8 @@ async def handle_click(message):
         await updateDB(message)
     elif message.text == '/blocked':
         await blockedUsers(message)
+    elif message.text == '/start':
+        await start_command(message)
     elif message.text == '/exit':
         await exitBot(message)
 
@@ -617,10 +619,11 @@ def NonAsync_loadArr(chat_id_dict):
     return [reminders_enabled_arr, daily_enabled_arr]
 
 
- # Populate the arrays based on the loaded data
+# Populate the arrays based on the loaded data
 async def loadArr(chat_id_dict):
-    reminders_enabled_arr = []
-    daily_enabled_arr = []
+    # reminders_enabled_arr = []
+    # daily_enabled_arr = []
+    global reminders_enabled_arr, daily_enabled_arr
     for chat_id, chat_data in chat_id_dict.items():
         if chat_data.get('reminders_enabled', True):
             reminders_enabled_arr.append(chat_id)
@@ -629,6 +632,20 @@ async def loadArr(chat_id_dict):
     
     return [reminders_enabled_arr, daily_enabled_arr]
 
+
+# Deleteing user
+async def delete_user(remove_chat_id):
+    global chat_id_dict
+    remove_chat_id = str(remove_chat_id)
+    if remove_chat_id in chat_id_dict:
+        chat_id_dict.pop(remove_chat_id, None)
+        text = f"User: {remove_chat_id} has been deleted\n"
+        logger.info(text)
+        await sbot.send_message(51719761, text)
+
+        await save_data(chat_id_dict)
+        logger.info(f"Updated database.")
+        
 
 # Shutdown function to handle cleanup before exiting
 async def shutdown():
@@ -641,7 +658,8 @@ async def shutdown():
 async def main():
     while(True):
         try:
-            await cycleCheck(chat_id_dict)
+            await cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr)
+
             print("Suspend")
             await asyncio.sleep(1)
         except Exception as e:
@@ -668,7 +686,7 @@ if __name__ == '__main__':
     print("User profiles have been loaded")
     logger.info("User profiles have been loaded")
     database_prayer_times = NonAsync_RefreshPrayerTime()
-    reminders_enabled_arr, daily_enabled_arr = NonAsync_loadArr()
+    reminders_enabled_arr, daily_enabled_arr = NonAsync_loadArr(chat_id_dict)
     print("Prayer Times have been loaded")
     logger.info("Prayer Times have been loaded")
 
