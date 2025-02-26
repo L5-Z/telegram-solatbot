@@ -183,6 +183,8 @@ async def handle_click(message):
         await blockedUsers(message)
     elif message.text == '/exit':
         await exitBot(message)
+    elif message.text == '/start':
+        await start_command(message)
 
 # ADMIN FUNCTION (51719761): ANNOUNCEMENTS
 @sbot.message_handler(commands=['announce'])
@@ -405,8 +407,8 @@ async def start_command(message):
     welcome_message += "Do /help for a list of commands\n"
     welcome_message += "Reminders are ON by default, do /toggle to turn them on\n"
     welcome_message += "Daily Prayer Time notifications (at 5AM) are ON by default, do /daily to turn them on\n\n"
-    welcome_message += "Current Version: v1.0.0 (Stable Release)\n"
-    welcome_message += "Updated and Patched as of 22/3/24\n"
+    welcome_message += "Current Version: v1.5.0 (Stable Release)\n"
+    welcome_message += "Updated and Patched as of 26/2/25\n"
     welcome_message += "Do /patch to view patchnotes\n\n"
     welcome_message += "Bot made by L5Z (Faatih) :)"
     await checker(message.chat.id)
