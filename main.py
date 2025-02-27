@@ -414,6 +414,8 @@ async def start_command(message):
     welcome_message += "Do /patch to view patchnotes\n\n"
     welcome_message += "Bot made by L5Z (Faatih) :)"
     await checker(message.chat.id)
+    await help_command(message)
+    await send_menu(message)
     await sbot.send_message(message.chat.id, welcome_message)
 
 # /settings command handler
@@ -562,6 +564,7 @@ async def help_command(message):
   await checker(message.chat.id)
   # List of available commands
   commands = [
+      "Help Menu (List of Commands):\n",
       "/menu - Displays menu buttons",
       "/menu_off - Disables menu buttons",
       "/settings - Displays current notification settings",
