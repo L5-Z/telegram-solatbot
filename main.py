@@ -409,8 +409,8 @@ async def start_command(message):
     welcome_message += "Do /help for a list of commands\n"
     welcome_message += "Reminders are ON by default, do /toggle to turn them on\n"
     welcome_message += "Daily Prayer Time notifications (at 5AM) are ON by default, do /daily to turn them on\n\n"
-    welcome_message += "Current Version: v1.5.0 (Stable Release)\n"
-    welcome_message += "Updated and Patched as of 26/2/25\n"
+    welcome_message += "Current Version: v1.5.1 (Stable Release)\n"
+    welcome_message += "Updated and Patched as of 27/2/25\n"
     welcome_message += "Do /patch to view patchnotes\n\n"
     welcome_message += "Bot made by L5Z (Faatih) :)"
     await checker(message.chat.id)
@@ -564,7 +564,6 @@ async def help_command(message):
   await checker(message.chat.id)
   # List of available commands
   commands = [
-      "Help Menu (List of Commands):\n",
       "/menu - Displays menu buttons",
       "/menu_off - Disables menu buttons",
       "/settings - Displays current notification settings",
@@ -577,7 +576,7 @@ async def help_command(message):
       "/help - List available commands"
   ]
   # Create a message with available commands
-  reply = "Available commands:\n"
+  reply = "Help Menu (List of Commands):\n"
   reply += "\n".join(commands)
   # Send the message with available commands
   await sbot.send_message(message.chat.id, reply)
