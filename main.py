@@ -411,8 +411,8 @@ async def start_command(message):
     welcome_message += "Daily Prayer Time notifications (at 5AM) are ON by default, do /daily to turn them on\n\n"
     welcome_message += "Current Version: v1.5.1 (Stable Release)\n"
     welcome_message += "Updated and Patched as of 27/2/25\n"
-    welcome_message += "Do /patch to view patchnotes\n\n"
-    welcome_message += "Bot made by L5Z (Faatih) :)"
+    #welcome_message += "Do /patch to view patchnotes\n\n"
+    welcome_message += "\n\nBot made by L5Z (Faatih) :)"
     await checker(message.chat.id)
     await help_command(message)
     await send_menu(message)
