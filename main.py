@@ -555,7 +555,7 @@ async def toggle_command(message):
 async def menu_off_command(message):
     await checker(message.chat.id)
     reply = "Menu is disabled"
-    await sbot.send_message(message.chat.id, reply)
+    await sbot.send_message(message.chat.id, reply, reply_markup=ReplyKeyboardRemove())
 
 # /help command handler
 @sbot.message_handler(regexp='help')
