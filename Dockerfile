@@ -16,5 +16,8 @@ EXPOSE 80
 # Define environment variable
 ENV NAME World
 
+# Define Timezone
+ENV TZ="Asia/Singapore"
+
 # Run main.py when the container launches
 CMD ["python", "-u", "main.py"]
