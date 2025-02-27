@@ -160,8 +160,8 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
         logger.error("Failed to retrieve runtime reminder/daily array from local database")
         reminders_enabled_arr, daily_enabled_arr = await loadArr(chat_id_dict)
         return
-    print("reminders_arr:", reminders_arr)
-    print("daily_arr:", daily_arr)
+    #print("reminders_arr:", reminders_arr)
+    #print("daily_arr:", daily_arr)
     
     # Update times
     AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
@@ -232,7 +232,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
 
         # Reduce CPU Load, fast return
         if (prayer == 'isyak') and now > this_prayer_time + timedelta(minutes=1) and now <= new_day:
-            print ("Returning: ", now)
+            print ("Returning from isyak: ", now)
             return
 
 
