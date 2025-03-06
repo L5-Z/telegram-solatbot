@@ -248,6 +248,8 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
     # If time is within 1 minute after azan
     if now < upcoming_prayer_time + timedelta(minutes=1) and now >= upcoming_prayer_time:
         
+        await asyncio.sleep(3)
+
         await bulk_send_reminders(reminders_enabled_arr, prayer, masa, upcoming_prayer_name)
         # change_prayer_time = upcoming_prayer_time
         
