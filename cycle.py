@@ -243,7 +243,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
     # Define the threshold time as the nearest upcoming prayer time
     print("Confirmed upcoming: ", upcoming_prayer_name)
     print("Now: ", now)
-    upcoming_prayer_time = upcoming_prayer_time + timedelta(seconds=5)
+    upcoming_prayer_time = upcoming_prayer_time + timedelta(seconds=7)
     print("Alert time upcoming: ", upcoming_prayer_time)
 
         
