@@ -1,0 +1,15 @@
+name: solatbot
+services:
+  solatbot:
+    image: solatbot
+    container_name: solatbot
+    restart: always
+    ports:
+      - "4000:80"
+    volumes:
+      - solatbot_data:/app
+    environment:
+      - TZ=Asia/Singapore
+
+volumes:
+  solatbot_data:
