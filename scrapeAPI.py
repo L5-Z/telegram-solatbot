@@ -12,7 +12,7 @@ sg_timezone = pytz.timezone('Asia/Singapore')
 
 # ASYNC Function to scrape prayer times from the website
 async def GetPrayerTime():
-    url = 'https://isomer-user-content.by.gov.sg/muis_prayers_timetable_2025.json'
+    url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable_{datetime.now().year}.json'
     headers = {
       'Cache-Control': 'no-cache',
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
@@ -60,7 +60,7 @@ async def GetPrayerTime():
 
 # Function to scrape prayer times from the website
 def NonAsync_GetPrayerTime():
-  url = 'https://isomer-user-content.by.gov.sg/muis_prayers_timetable_2025.json'
+  url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable_{datetime.now().year}.json'
   headers = {
     'Cache-Control': 'no-cache',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
@@ -142,9 +142,9 @@ def formatData(input_dict):
       parts = format_time.split(':', 1)
       if parts and len(parts[0]) == 1:
         format_time = "0" + format_time
-        # Ensure the am/pm part is uppercase
-        format_time = re.sub(r'(am|pm)$', lambda m: m.group(0).upper(), format_time, flags=re.IGNORECASE)
-        time_dict[prayer] = format_time
+      # Ensure the am/pm part is uppercase
+      format_time = re.sub(r'(am|pm)$', lambda m: m.group(0).upper(), format_time, flags=re.IGNORECASE)
+      time_dict[prayer] = format_time
 
     return [time_dict, date_dict]
   else:
@@ -173,9 +173,9 @@ async def formatTimesData(input_dict):
       parts = format_time.split(':', 1)
       if parts and len(parts[0]) == 1:
         format_time = "0" + format_time
-        # Ensure the am/pm part is uppercase
-        format_time = re.sub(r'(am|pm)$', lambda m: m.group(0).upper(), format_time, flags=re.IGNORECASE)
-        time_dict[prayer] = format_time
+      # Ensure the am/pm part is uppercase
+      format_time = re.sub(r'(am|pm)$', lambda m: m.group(0).upper(), format_time, flags=re.IGNORECASE)
+      time_dict[prayer] = format_time
 
     return [time_dict, date_dict]
   else:
