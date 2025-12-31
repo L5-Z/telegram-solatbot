@@ -12,7 +12,7 @@ sg_timezone = pytz.timezone('Asia/Singapore')
 
 # ASYNC Function to scrape prayer times from the website
 async def GetPrayerTime():
-    url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable_{datetime.now().year}.json'
+    url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json'
     headers = {
       'Cache-Control': 'no-cache',
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
@@ -60,7 +60,7 @@ async def GetPrayerTime():
 
 # Function to scrape prayer times from the website
 def NonAsync_GetPrayerTime():
-  url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable_{datetime.now().year}.json'
+  url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json'
   headers = {
     'Cache-Control': 'no-cache',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
