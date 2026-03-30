@@ -335,12 +335,12 @@ async def whisper_user(message):
             await sbot.send_message('51719761', welcome_admin)
             print("sent whisper: ", receiver)
         except apihelper.ApiException as e:
-            logger.error(f"Failed to send announcement to {receiver}")
+            logger.error(f"Failed to send whisper to {receiver}")
             if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
                 logger.warning(f"Bot was blocked by user {receiver}")
                 print(f"\n\nBot was blocked by user {receiver}\n\n")
             else:
-                logger.error(f"An error occurred in sending announcement: {e}")
+                logger.error(f"An error occurred in sending whisper: {e}")
         except Exception as e:
             # Check if it's a 403 from the generic exception
             if "403" in str(e) and "blocked" in str(e).lower():
