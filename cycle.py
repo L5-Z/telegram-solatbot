@@ -83,13 +83,15 @@ async def send_reminder(chat_id: str, prayer: str, masa: str, reminders_enabled_
             logger.warning(f"Bot was blocked by user {chat_id}")
             print(f"\n\nBot was blocked by user {chat_id}\n\n")
 
-            reminders_enabled_arr.remove(chat_id)
-            await delete_user(chat_id)
-
-            print("Removed blocker: ", chat_id, "\n\n")
-            logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
         else:
             logger.error(f"An error occurred in sending reminders: {e}")
+    except Exception as e:
+        # Check if it's a 403 from the generic exception
+        if "403" in str(e) and "blocked" in str(e).lower():
+            logger.warning(f"Bot was blocked by user {chat_id} (caught in generic Exception)")
+        else:
+            # Catch all other possible errors to avoid stopping the loop
+            logger.error(f"Unexpected error for {chat_id}: {e}")
     
     finally:
         return
@@ -119,12 +121,15 @@ async def scheduleRun(chat_id_dict):
                 if "bot was blocked by the user" in e.result.text: # e.result.status_code == 403 and 
                     logger.warning(f"Bot was blocked by user {chat_id}")
                     print(f"\n\nBot was blocked by user {chat_id}\n\n")
-                    blocked_users.append(chat_id)
-                    chat_id_dict.pop(chat_id, None)
-                    print("Removed blocker: ", chat_id, "\n\n")
-                    logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
                 else:
                     logger.error(f"An error occurred in sending reminders: {e}")
+            except Exception as e:
+                # Check if it's a 403 from the generic exception
+                if "403" in str(e) and "blocked" in str(e).lower():
+                    logger.warning(f"Bot was blocked by user {chat_id} (caught in generic Exception)")
+                else:
+                    # Catch all other possible errors to avoid stopping the loop
+                    logger.error(f"Unexpected error for {chat_id}: {e}")
             finally:
                 continue
 
