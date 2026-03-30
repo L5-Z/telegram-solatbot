@@ -260,10 +260,14 @@ async def dumpDict(message):
         print("\nAdmin is dumping user database:\n")
         data_dump = "User ID Dump:\n\n"
 
+        usercount = 0
         for chat_id in chat_id_dict:
             data_dump += str(chat_id) + "\n"
-            
+            if chat_id > 0: # Only count individual users, not groups
+                usercount += 1
         
+        data_dump += "\nTotal Individual Users: " + str(usercount) + "\n"
+        data_dump += "\n\nTotal Users: " + str(len(chat_id_dict)) + "\n"
         print("Successfully dumped data\n")
         await sbot.send_message(message.chat.id, data_dump)     
     else:
