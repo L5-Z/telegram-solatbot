@@ -47,11 +47,14 @@ donate_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 main_menu.row(KeyboardButton('Notifications'), KeyboardButton('Current Timings'))
 main_menu.row(KeyboardButton('Settings'), KeyboardButton('Information'))
 main_menu.row(KeyboardButton('Help'))
+
 toggle_menu.row(KeyboardButton('Reminders'), KeyboardButton('Daily Updates'))
 toggle_menu.row(KeyboardButton('Back'))
+
 info_menu.row(KeyboardButton('Qiblat'), KeyboardButton('Donate'))
 info_menu.row(KeyboardButton('Feedback'), KeyboardButton('Zakat'))
 info_menu.row(KeyboardButton('Back'))
+
 donate_menu.row(KeyboardButton('North'), KeyboardButton('South'))
 donate_menu.row(KeyboardButton('East'), KeyboardButton('West'))
 donate_menu.row(KeyboardButton('Back'))
@@ -81,8 +84,6 @@ async def handle_region_click(message):
         buttons = [InlineKeyboardButton(str(i), callback_data=f'index_{region}_{i}') for i in range(1, len(mosques) + 1)]
         inline_kb.add(*buttons)  # Unpack the list of buttons with add method of InlineKeyboardMarkup
 
-        
-
     else:
         response = "No mosques found in this region."
 
@@ -108,33 +109,17 @@ async def handle_index_selection(call):
     mosque_info = f"*__{mosque}__*\n"
     mosque_info += await mosque_extract(path)
 
-    # Escape special characters like '-' using '\'
-    mosque_info = mosque_info.replace('-', r'\-')
-    mosque_info = mosque_info.replace('#', r'\#')
-    mosque_info = mosque_info.replace('.', r'\.')
-    mosque_info = mosque_info.replace('(', r'\(')
-    mosque_info = mosque_info.replace(')', r'\)')
-
-    # Escape special characters like '-' using '\'
-    mosque_replaced = mosque
-    mosque_replaced = mosque_replaced.replace('-', r'\-')
-    mosque_replaced = mosque_replaced.replace('.', r'\.')
-    mosque_replaced = mosque_replaced.replace('#', r'\#')
-    mosque_replaced = mosque_replaced.replace('(', r'\(')
-    mosque_replaced = mosque_replaced.replace(')', r'\)')
-
-    # Escape special characters like '-' using '\'
-    qr_result_formatted = qr_result
-    qr_result_formatted = qr_result_formatted.replace('-', r'\-')
-    qr_result_formatted = qr_result_formatted.replace('.', r'\.')
-    qr_result_formatted = qr_result_formatted.replace('#', r'\#')
-    qr_result_formatted = qr_result_formatted.replace('(', r'\(')
-    qr_result_formatted = qr_result_formatted.replace(')', r'\)')
-    qr_result_formatted = qr_result_formatted.replace('=', r'\=')
-    qr_result_formatted = qr_result_formatted.replace('_', r'\_')
+    # Formatting the text to escape special characters for MarkdownV2
+    mosque_info = await format_text(mosque_info)
+    mosque_replaced = await format_text(mosque)
+    qr_result_formatted = await format_text(qr_result)
     
     await sbot.send_message(call.message.chat.id, mosque_info, 'MarkdownV2')
     await sbot.send_message(call.message.chat.id, f"*__PayNow QR link for {mosque_replaced}:__*\n\n{qr_result_formatted}", 'MarkdownV2', reply_markup=info_menu)
+
+async def format_text(raw_text):
+    # Common punctuation to escape in Markdown inline contexts
+    return re.sub(r'([\\`*_{}\[\]()#+\-.!=])', r'\\\1', raw_text)
 
 # Handler for processing button clicks
 @sbot.message_handler(func=lambda message: True)
