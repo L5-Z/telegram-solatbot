@@ -382,7 +382,7 @@ async def checker(chat_id):
         daily_enabled_arr.append(chat_id)
 
         logger.info(f"Saved {chat_id} to database.")
-        await sbot.send_message('51719761', f"Admin New User Joined: {chat_id}")
+        await sbot.send_message('51719761', f"[Admin] New User Joined: {chat_id}")
 
 
 # Command Handlers
@@ -395,7 +395,8 @@ async def start_command(message):
     welcome_message = "Thanks for using my bot!\n\n"
     welcome_message += "Do /help for a list of commands\n"
     welcome_message += "Reminders are ON by default, do /toggle to turn them on\n"
-    welcome_message += "Daily Prayer Time notifications (at 5AM) are ON by default, do /daily to turn them on\n\n"
+    welcome_message += "Daily Prayer Time notifications (at 5AM) are ON by default, do /daily to turn them on\n\n\n"
+    welcome_message += "Please run /stop to stop receiving notifications instead of blocking the bot\n"
     welcome_message += "Current Version: v1.7.1 (Stable Release)\n"
     welcome_message += "Updated and Patched as of 25/3/26\n"
     #welcome_message += "Do /patch to view patchnotes\n\n"
@@ -403,6 +404,19 @@ async def start_command(message):
     await checker(message.chat.id)
     await help_command(message)
     await sbot.send_message(message.chat.id, welcome_message, reply_markup=main_menu)
+
+# /stop command handler
+@sbot.message_handler(regexp='stop')
+@sbot.message_handler(commands=['stop'])
+async def stop_command(message):
+    await checker(message.chat.id)
+    chat_id = str(message.chat.id)
+    if chat_id in chat_id_dict:
+        del chat_id_dict[chat_id]
+        await save_data(chat_id_dict)
+        logger.info(f"Removed {chat_id} from database.")
+    await sbot.send_message(message.chat.id, "You will no longer receive notifications. Thank you for using my bot!")
+    await sbot.send_message('51719761', f"[Admin] Current User Left: {chat_id}")
 
 # /settings command handler
 @sbot.message_handler(regexp='settings')
