@@ -19,41 +19,57 @@ sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
 
-global blocked_users
-blocked_users = []
-
 # Check for blocked users
-async def check_for_blocked_users(chat_id_dict, logger):
+async def block_scan(chat_id_dict, logger):
+    blocked_users = []
+
     for chat_id in chat_id_dict:
         try:
             # Send a dummy message to check if the bot is blocked
             await sbot.send_chat_action(chat_id=chat_id, action='typing')
-        except telebot.apihelper.ApiException as e:
-            if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
-                logger.warning(f"Bot was blocked by user {chat_id}")
-                print(f"Bot was blocked by user {chat_id}")
+        except ApiTelegramException as e:
+            if e.error_code == 403:
+                logger.warning(f"Bot was blocked by user {chat_id}") 
                 blocked_users.append(chat_id)
+        except Exception as e:
+            # Check if it's a 403 from the generic exception
+            if "403" in str(e) and "blocked" in str(e).lower():
+                logger.warning(f"Bot was blocked by user {chat_id} (caught in generic Exception)")
+                blocked_users.append(chat_id)
+            else:
+                # Catch all other possible errors to avoid stopping the loop
+                logger.error(f"Unexpected error for {chat_id}: {e}")
+
     return blocked_users
 
+  
 # Blocked user process
-async def blocked_users_handling(chat_id_dict, logger):
+async def block_check(chat_id_dict, logger):
     logger.info("Block Check...")
     print("Block Check...")
     # Remove blocked users from chat_id_dict or take other appropriate action
-    blocked_users = await check_for_blocked_users(chat_id_dict)
+    blocked_users = await block_scan(chat_id_dict, logger)
+    num_blocked = len(blocked_users)
     if blocked_users:
         # Notify of blocked users
-        logger.info(f"Bot was blocked by the following users: {', '.join(map(str, blocked_users))}")
+        text = f"Bot was blocked by the following users: {', '.join(map(str, blocked_users))}"
+        logger.info(text)
+        await sbot.send_message(51719761, text)
             
         # Remove blocked users from database
         for blocked_user in blocked_users:
             chat_id_dict.pop(blocked_user, None)
             print("Removed blocker: ", blocked_user)
-            logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
+        
+        text = f"Removed {num_blocked} blocked users from the chat_id_dict database."
+        logger.info(text)
+        await sbot.send_message(51719761, text)
 
     else:
         logger.info("No users have blocked the bot. Proceeding...")
         print("No blocks")
+    
+    await sbot.send_message(51719761, "Completed block check. Proceeding with scheduled tasks.")
 
 '''
 # Schedule block check

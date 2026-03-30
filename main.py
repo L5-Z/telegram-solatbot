@@ -197,12 +197,15 @@ async def announce(message):
                         if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
                             logger.warning(f"Bot was blocked by user {chat_id}")
                             print(f"\n\nBot was blocked by user {chat_id}\n\n")
-                            blocked_users.append(chat_id)
-                            chat_id_dict.pop(chat_id, None)
-                            print("Removed blocker: ", chat_id, "\n\n")
-                            logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
                         else:
                             logger.error(f"An error occurred in sending announcement: {e}")
+                    except Exception as e:
+                        # Check if it's a 403 from the generic exception
+                        if "403" in str(e) and "blocked" in str(e).lower():
+                            logger.warning(f"Bot was blocked by user {chat_id} (caught in generic Exception)")
+                        else:
+                            # Catch all other possible errors to avoid stopping the loop
+                            logger.error(f"Unexpected error for {chat_id}: {e}")
                     finally:
                         continue
         
@@ -305,14 +308,11 @@ async def updateDB(message):
 async def blockedUsers(message):
     if message.chat.id == 51719761:
         print("\nAdmin is viewing blockers")
-        admin_message = "Welcome Admin, here are the blockers:\n"
 
-        # Remove blocked users from database
-        for blocked_user in blocked_users:
-            admin_message += blocked_user
-            admin_message += "\n"
-        
+        admin_message = "Welcome Admin, here are the blockers:\n"
         await sbot.send_message(message.chat.id, admin_message)  
+        await block_check(chat_id_dict, logger)
+
         print("The blockers have been displayed.\n")      
     else:
         return
@@ -339,12 +339,15 @@ async def whisper_user(message):
             if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
                 logger.warning(f"Bot was blocked by user {receiver}")
                 print(f"\n\nBot was blocked by user {receiver}\n\n")
-                blocked_users.append(receiver)
-                chat_id_dict.pop(receiver, None)
-                print("Removed blocker: ", receiver, "\n\n")
-                logger.info(f"Removed {len(blocked_users)} blocked users from the chat_id_dict database.")
             else:
-                logger.error(f"An error occurred in sending announcement: {e}")  
+                logger.error(f"An error occurred in sending announcement: {e}")
+        except Exception as e:
+            # Check if it's a 403 from the generic exception
+            if "403" in str(e) and "blocked" in str(e).lower():
+                logger.warning(f"Bot was blocked by user {receiver} (caught in generic Exception)")
+            else:
+                # Catch all other possible errors to avoid stopping the loop
+                logger.error(f"Unexpected error for {receiver}: {e}")
     else:
         return
 
