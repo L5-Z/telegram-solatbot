@@ -44,7 +44,7 @@ info_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 donate_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 
 # Main Menu buttons
-main_menu.row(KeyboardButton('Notifications'), KeyboardButton('Current Timings'))
+main_menu.row(KeyboardButton('Upcoming Timings (In Progress)'), KeyboardButton('Current Timings'))
 main_menu.row(KeyboardButton('Settings'), KeyboardButton('Information'))
 main_menu.row(KeyboardButton('Help'))
 
@@ -126,10 +126,9 @@ async def format_text(raw_text):
 async def handle_click(message):
     if message.text == 'Settings' or message.text == '/settings':
         await settings_command(message)
+        await sbot.send_message(message.chat.id, "Edit notification settings with the toggle buttons below:", reply_markup=toggle_menu)
     elif message.text == 'Current Timings' or message.text == '/timings':
         await timings_command(message)
-    elif message.text == 'Notifications':
-        await sbot.send_message(message.chat.id, "Edit your notification settings:", reply_markup=toggle_menu)
     elif message.text == 'Help' or '/help' in message.text:
         await help_command(message)
     elif message.text == 'Reminders' or message.text == '/toggle':
