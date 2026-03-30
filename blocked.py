@@ -1,12 +1,11 @@
 import pytz
 import datetime
-import logging
+from logs import logger
 import telebot
 from telebot.async_telebot import AsyncTeleBot
+from telebot.apihelper import ApiTelegramException
 from telebot.types import *
 from datetime import *
-
-logger = logging.getLogger(__name__)
 
 # Bot token
 with open('botKey.txt', 'r') as file:

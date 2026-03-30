@@ -1,4 +1,4 @@
-import logging
+from logs import logger
 import asyncio
 import telebot 
 from telebot import apihelper
@@ -688,8 +688,6 @@ if __name__ == '__main__':
         format='%(asctime)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
-    # Get the logger instance
-    logger = logging.getLogger(__name__)
 
     logger.info("Bot is initialised and will run.")
 

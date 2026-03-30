@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from main import logger
+from logs import logger
 
 # Function to scrape the mosque data
 async def get_mosques(region):

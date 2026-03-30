@@ -5,9 +5,8 @@ import requests
 import json
 #import time
 from datetime import *
-import logging
+from logs import logger
 
-logger = logging.getLogger(__name__)
 sg_timezone = pytz.timezone('Asia/Singapore')
 
 # ASYNC Function to scrape prayer times from the website
