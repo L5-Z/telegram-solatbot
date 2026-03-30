@@ -402,8 +402,7 @@ async def start_command(message):
     welcome_message += "\n\nBot made by L5Z (Faatih) :)"
     await checker(message.chat.id)
     await help_command(message)
-    await send_menu(message)
-    await sbot.send_message(message.chat.id, welcome_message)
+    await sbot.send_message(message.chat.id, welcome_message, reply_markup=main_menu)
 
 # /settings command handler
 @sbot.message_handler(regexp='settings')
