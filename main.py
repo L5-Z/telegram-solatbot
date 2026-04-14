@@ -45,7 +45,7 @@ info_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 donate_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 
 # Main Menu buttons
-main_menu.row(KeyboardButton('Upcoming Timings (In Progress)'), KeyboardButton('Current Timings'))
+main_menu.row(KeyboardButton('Upcoming Timings'), KeyboardButton('Current Timings'))
 main_menu.row(KeyboardButton('Settings'), KeyboardButton('Information'))
 main_menu.row(KeyboardButton('Help'))
 
