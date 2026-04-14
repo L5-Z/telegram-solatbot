@@ -392,6 +392,12 @@ async def checker(chat_id):
 @sbot.message_handler(regexp='start')
 @sbot.message_handler(commands=['start'])
 async def start_command(message):
+    # Intro message
+    intro_message = "Assalamu'alaikum! I am a bot that provides prayer time notifications for Singapore.\n\n"
+    intro_message += "What I can do:\n"
+    intro_message += "- Send you azan reminders at each prayer time (with the next upcoming prayer in the works!)\n"
+    intro_message += "- Optionally send the full daily prayer timetable at 5 AM each morning\n"
+    intro_message += "- Provides the Qiblat direction for Singapore\n\n"
     # Welcome message
     welcome_message = "Thanks for using my bot!\n\n"
     welcome_message += "Do /help for a list of commands\n"
@@ -403,8 +409,9 @@ async def start_command(message):
     #welcome_message += "Do /patch to view patchnotes\n\n"
     welcome_message += "\n\nBot made by L5Z (Faatih) :)"
     await checker(message.chat.id)
+    await sbot.send_message(message.chat.id, intro_message, reply_markup=main_menu)
     await help_command(message)
-    await sbot.send_message(message.chat.id, welcome_message, reply_markup=main_menu)
+    await sbot.send_message(message.chat.id, welcome_message)
 
 # /stop command handler
 @sbot.message_handler(regexp='stop')
