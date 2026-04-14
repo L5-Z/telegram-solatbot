@@ -6,6 +6,7 @@ import json
 #import time
 from datetime import *
 from logs import logger
+from text import current_prayertimes
 
 sg_timezone = pytz.timezone('Asia/Singapore')
 
@@ -206,26 +207,7 @@ async def printTimes():
     isyak_time = prayer_times.get('isyak', 'N/A')
 
     # Create a message with the prayer times and additional information
-    message = ""
-    message += u"\U0001F54C"
-    message += f"   *Daily Prayer Times*   "
-    message += u"\U0001F54C"
-    message += f"\n\n"
-    message += f"*Date:* {prayer_date}\n"
-    message += f"*Hijri:* {hijri_date}\n"
-    message += f"\n"
-    message += f"          *Subuh:* {subuh_time}\n\n"
-    message += f"          *Syuruk:* {syuruk_time}\n\n"
-    message += f"          *Zohor:* {zohor_time}\n\n"
-    message += f"          *Asar:* {asar_time}\n\n"
-    message += f"          *Maghrib:* {maghrib_time}\n\n"
-    message += f"          *Isyak:* {isyak_time}\n"
-    message += f"\u00A0 ㅤ"
-
-    # Escape special characters like '-' using '\'
-    message = message.replace('-', r'\-')
-    message = message.replace('#', r'\#')
-    message = message.replace('.', r'\.')
+    message = await current_prayertimes (prayer_date=prayer_date, hijri_date=hijri_date, subuh_time=subuh_time, syuruk_time=syuruk_time, zohor_time=zohor_time, asar_time=asar_time, maghrib_time=maghrib_time, isyak_time=isyak_time)
 
     logger.info("Successfully formatted prayer times")
 

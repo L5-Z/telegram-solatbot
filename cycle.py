@@ -11,6 +11,7 @@ from scrapeAPI import *
 from blocked import *
 from storage import save_data
 from main import database_prayer_times, loadArr, delete_user
+from text import reminder_text
 
 global upcoming_prayer_time
 upcoming_prayer_time = None
@@ -33,48 +34,19 @@ custom_timezone = pytz.FixedOffset(480) # Default 480 for SG, 450 for 7h:30mins 
 
 
 # Function to format reminder text
-async def format_reminder(chat_id, prayer, masa):
-    
-    prayer = prayer.capitalize()
+async def solat_reminder(chat_id, prayer, masa, next_prayer=None, next_prayer_time=None):
+    reminder_message = await reminder_text(chat_id, prayer, masa, next_prayer, next_prayer_time)
 
-    try:
-        dt = datetime.strptime(masa, '%H:%M')
-        masa = dt.strftime('%I:%M %p')
-    except ValueError as e:
-        logger.error(f"ValueError converting masa to 12H, send_reminder: {e}")
-    finally:
-        header_art = '\U0001F54B'
-
-        if prayer == "Subuh":
-            header_art = '\U0001F30C'
-        if prayer == "Syuruk":
-            header_art = '\U0001F305'
-        if prayer == "Zohor":
-            header_art = '\U0001F3D9'
-        if prayer == "Asar":
-            header_art = '\U0001F307'
-        if prayer == "Maghrib":
-            header_art = '\U0001F304'
-        if prayer == "Isyak":
-            header_art = '\U0001F303'
-
-        reminder_message = f'{header_art} It is now *{prayer} ({masa})* {header_art}\n\n'
-
-        if prayer == "Syuruk":
-            reminder_message += "\u2600\uFE0F The sun is up! \u2600\uFE0F"
-        else:
-            reminder_message += "May your fardh prayer be blessed! \U0001F932"
-
-        # Send message
-        await sbot.send_message(chat_id, reminder_message, 'Markdown')
+    # Send message
+    await sbot.send_message(chat_id, reminder_message, 'Markdown')
 
 
 # Execute the send_reminder
-async def send_reminder(chat_id: str, prayer: str, masa: str, reminders_enabled_arr, upcoming_prayer_name):
+async def send_reminder(chat_id: str, prayer: str, masa: str, reminders_enabled_arr, upcoming_prayer_name, next_prayer=None, next_prayer_time=None):
     # Iterate through chat_id_dict to send reminders
     #for chat_id, chat_info in chat_id_dict.items():
     try:
-        await format_reminder(chat_id, prayer, masa)
+        await solat_reminder(chat_id, prayer, masa, next_prayer, next_prayer_time)
         logger.info(f"Sent reminder to {chat_id} for {upcoming_prayer_name} prayer")
         print("sent reminder", chat_id)
     
@@ -97,8 +69,8 @@ async def send_reminder(chat_id: str, prayer: str, masa: str, reminders_enabled_
         return
 
 # Bulk Send reminders at once
-async def bulk_send_reminders(chat_ids: List[str], prayer: str, masa: str, upcoming_prayer_name):
-    tasks = [send_reminder(chat_id, prayer, masa, chat_ids, upcoming_prayer_name) for chat_id in chat_ids]
+async def bulk_send_reminders(chat_ids: List[str], prayer: str, masa: str, upcoming_prayer_name, next_prayer=None, next_prayer_time=None):
+    tasks = [send_reminder(chat_id, prayer, masa, chat_ids, upcoming_prayer_name, next_prayer, next_prayer_time) for chat_id in chat_ids]
     await asyncio.gather(*tasks)
 
 # Schedule the scraper to run daily at 5 AM SGT
@@ -252,10 +224,19 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
         
     # If time is within 1 minute after azan
     if now < upcoming_prayer_time + timedelta(minutes=1) and now >= upcoming_prayer_time:
+        prayer_keys = list(solatTimes.keys())
+        next_prayer_name = None
+        next_prayer_time = None
+        if prayer in prayer_keys:
+            current_index = prayer_keys.index(prayer)
+            if current_index < len(prayer_keys) - 1:
+                next_prayer_name = prayer_keys[current_index + 1]
+                next_prayer_time = solatTimes[next_prayer_name]
+            else:
+                next_prayer_name = prayer_keys[0]
+                next_prayer_time = solatTimes[next_prayer_name]
 
-        await bulk_send_reminders(reminders_enabled_arr, prayer, masa, upcoming_prayer_name)
-        # change_prayer_time = upcoming_prayer_time
-        
+        await bulk_send_reminders(reminders_enabled_arr, prayer, masa, upcoming_prayer_name, next_prayer_name, next_prayer_time)
         await asyncio.sleep(61)
 
 

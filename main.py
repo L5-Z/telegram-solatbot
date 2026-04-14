@@ -11,6 +11,7 @@ from scrapeAPI import *
 from cycle import *
 from blocked import *
 from donate import *
+from funcs import format_text
 
 # Bot token
 with open('botKey.txt', 'r') as file:
@@ -116,10 +117,6 @@ async def handle_index_selection(call):
     
     await sbot.send_message(call.message.chat.id, mosque_info, 'MarkdownV2')
     await sbot.send_message(call.message.chat.id, f"*__PayNow QR link for {mosque_replaced}:__*\n\n{qr_result_formatted}", 'MarkdownV2', reply_markup=info_menu)
-
-async def format_text(raw_text):
-    # Common punctuation to escape in Markdown inline contexts
-    return re.sub(r'([\\`*_{}\[\]()#+\-.!=])', r'\\\1', raw_text)
 
 # Handler for processing button clicks
 @sbot.message_handler(func=lambda message: True)
