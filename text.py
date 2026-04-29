@@ -58,4 +58,6 @@ async def current_prayertimes(prayer_date=None, hijri_date=None, subuh_time=None
     message += f"\u00A0 ㅤ"
 
     # Escape special chars
-    message = format_text(message)
+    message = await format_text(message)
+
+    return message
