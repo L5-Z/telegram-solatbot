@@ -1,6 +1,6 @@
 from logs import logger
 import asyncio
-import telebot 
+import telebot
 from telebot import apihelper
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -35,8 +35,11 @@ daily_enabled_arr = []
 custom_5_enabled_arr = []
 custom_10_enabled_arr = []
 custom_15_enabled_arr = []
-custom_20_enabled_arr = []
-custom_25_enabled_arr = []
+
+def _purge_chat_id_from_custom_arrays(chat_id):
+    for arr in (custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr):
+        if chat_id in arr:
+            arr.remove(chat_id)
 
 # Define the menus
 main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -45,11 +48,12 @@ info_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 donate_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 
 # Main Menu buttons
-main_menu.row(KeyboardButton('Upcoming Timings (In Progress)'), KeyboardButton('Current Timings'))
+main_menu.row(KeyboardButton('Upcoming Timings'), KeyboardButton('Current Timings'))
 main_menu.row(KeyboardButton('Settings'), KeyboardButton('Information'))
 main_menu.row(KeyboardButton('Help'))
 
 toggle_menu.row(KeyboardButton('Reminders'), KeyboardButton('Daily Updates'))
+toggle_menu.row(KeyboardButton('Pre-Reminders'))
 toggle_menu.row(KeyboardButton('Back'))
 
 info_menu.row(KeyboardButton('Qiblat'), KeyboardButton('Donate'))
@@ -134,6 +138,8 @@ async def handle_click(message):
     elif message.text == 'Daily Updates' or message.text == '/daily':
         await daily_command(message)
         await settings_command(message)
+    elif message.text == 'Pre-Reminders' or message.text == '/prereminder':
+        await prereminder_command(message)
     elif message.text == 'Back':
         await sbot.send_message(message.chat.id, "Back to main menu:", reply_markup=main_menu)
     elif message.text == 'Information':
@@ -244,9 +250,10 @@ async def delUser(message):
             # Remove the chat ID from the arrays
             reminders_enabled_arr.remove(remove_chat_id)  # Remove from the array
             daily_enabled_arr.remove(remove_chat_id)  # Remove from the array
-        
+            _purge_chat_id_from_custom_arrays(remove_chat_id)
+
         print("User: ", remove_chat_id, " has been deleted\n")
-        await sbot.send_message(message.chat.id, notify)     
+        await sbot.send_message(message.chat.id, notify)
     else:
         return
     
@@ -292,12 +299,15 @@ async def updateDB(message):
         admin_message = "Welcome Admin, the database has been updated.\n"
 
         for chat_id, chat_data in chat_id_dict.items():
+            existing_durations = chat_data.get('custom_durations', [])
+            normalized_durations = (existing_durations + [False, False, False])[:3]
             new_chat_data = {
             'reminders_enabled': chat_data.get('reminders_enabled', True),
             'daily_timings_enabled': chat_data.get('daily_timings_enabled', True),
-            'custom_durations': chat_data.get('custom_durations', [False, False, False, False, False]),
+            'custom_durations': normalized_durations,
             }
             chat_id_dict[chat_id] = new_chat_data
+        await save_data(chat_id_dict)
         
         await sbot.send_message(message.chat.id, admin_message)  
         print("The database has been updated.\n")      
@@ -358,7 +368,7 @@ async def exitBot(message):
     if message.chat.id == 51719761:
         print("Admin has initiated bot shutdown.")
         logger.info("Admin has initiated bot shutdown.")
-        await shutdown()     
+        await shutdown()
     else:
         return
 
@@ -373,7 +383,7 @@ async def checker(chat_id):
         chat_id_dict[chat_id] = {
             'reminders_enabled': True,
             'daily_timings_enabled': True,
-            'custom_durations': [False, False, False, False, False], # Time for 5, 10, 15, 20, 30
+            'custom_durations': [False, False, False], # Time for 5, 10, 15
         }
 
         await save_data(chat_id_dict)
@@ -421,6 +431,7 @@ async def stop_command(message):
     chat_id = str(message.chat.id)
     if chat_id in chat_id_dict:
         del chat_id_dict[chat_id]
+        _purge_chat_id_from_custom_arrays(chat_id)
         await save_data(chat_id_dict)
         logger.info(f"Removed {chat_id} from database.")
     await sbot.send_message(message.chat.id, "You will no longer receive notifications. Thank you for using my bot!")
@@ -448,6 +459,14 @@ async def settings_command(message):
     reply = "_Current Settings:_\n\n"
     reply += f"*Reminders Enabled:* {rem_tog}\n"
     reply += f"*Daily Timings Enabled:* {dly_tog}\n\n"
+
+    durations = chat_info.get('custom_durations', [False, False, False])
+    durations = (durations + [False, False, False])[:3]
+    labels = ['5min', '10min', '15min']
+    reply += "*Pre\\-Reminders:*\n"
+    for i, lbl in enumerate(labels):
+        state = "On ✅" if durations[i] else "Off ❌"
+        reply += f"  {lbl}: {state}\n"
 
     # Send the message with prayer times
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
@@ -557,6 +576,74 @@ async def toggle_command(message):
         reminders_enabled_arr.remove(chat_id)  # Remove from the array
         await sbot.send_message(message.chat.id, "Azan reminders are now disabled. \u274c")
 
+# /prereminder command handler
+@sbot.message_handler(commands=['prereminder'])
+async def prereminder_command(message):
+    await checker(message.chat.id)
+    chat_id = str(message.chat.id)
+    chat_info = chat_id_dict[chat_id]
+
+    durations = chat_info.get('custom_durations', [False, False, False])
+    durations = (durations + [False, False, False])[:3]
+    chat_info['custom_durations'] = durations
+
+    kb = InlineKeyboardMarkup(row_width=1)
+    for idx, label in enumerate(['5 min', '10 min', '15 min']):
+        mark = '✅' if durations[idx] else '❌'
+        kb.add(InlineKeyboardButton(f"{label} {mark}", callback_data=f'prerem_{idx}'))
+
+    await sbot.send_message(
+        message.chat.id,
+        "Toggle pre-prayer reminders (any combination):",
+        reply_markup=kb,
+    )
+
+# Callback handler for the inline pre-reminder toggle keyboard
+@sbot.callback_query_handler(func=lambda call: call.data.startswith('prerem_'))
+async def handle_prereminder_toggle(call):
+    global custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr
+
+    idx = int(call.data.split('_')[1])
+    minutes = [5, 10, 15][idx]
+    chat_id = str(call.message.chat.id)
+
+    # Ensure the user record exists and has a 3-slot array
+    await checker(chat_id)
+    chat_info = chat_id_dict[chat_id]
+    durations = (chat_info.get('custom_durations', []) + [False, False, False])[:3]
+    durations[idx] = not durations[idx]
+    chat_info['custom_durations'] = durations
+
+    arrays = [custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr]
+    target_arr = arrays[idx]
+    if durations[idx]:
+        if chat_id not in target_arr:
+            target_arr.append(chat_id)
+    else:
+        if chat_id in target_arr:
+            target_arr.remove(chat_id)
+
+    await save_data(chat_id_dict)
+
+    await sbot.answer_callback_query(
+        call.id,
+        f"{minutes}-min pre-reminder {'enabled' if durations[idx] else 'disabled'}",
+    )
+
+    # Re-render the inline keyboard in place with updated marks
+    kb = InlineKeyboardMarkup(row_width=1)
+    for i, label in enumerate(['5 min', '10 min', '15 min']):
+        mark = '✅' if durations[i] else '❌'
+        kb.add(InlineKeyboardButton(f"{label} {mark}", callback_data=f'prerem_{i}'))
+    try:
+        await sbot.edit_message_reply_markup(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=kb,
+        )
+    except Exception as e:
+        logger.warning(f"Failed to edit pre-reminder keyboard: {e}")
+
 # /menu_off command handler
 @sbot.message_handler(regexp='menu_off')
 @sbot.message_handler(commands=['menu_off'])
@@ -578,6 +665,7 @@ async def help_command(message):
       "/toggle - Toggle reminders on or off",
       "/timings - Get current prayer times",
       "/daily - Toggle daily prayer times (at 5AM) notifications on or off",
+      "/prereminder - Toggle 5/10/15 min pre-prayer reminders",
       # "/list - List current slots\n",
       # "/customreminder [<index>] <minutes> - Set or edit a custom reminder (0 minutes to disable)\n(e.g. /customreminder 30 creates a new 30 minute pre-reminder while /customreminder 1 45 edits the pre-reminder in Slot 1 to 45 minutes.\nOmitting <index> changes the bot to 'create' mode\nNote: This is the only command with a format)\n",
       # "/patch - Lists updates to the bot", 
@@ -629,27 +717,44 @@ async def patch_command(message):
 def NonAsync_loadArr(chat_id_dict):
     reminders_enabled_arr = []
     daily_enabled_arr = []
+    custom_5 = []
+    custom_10 = []
+    custom_15 = []
     for chat_id, chat_data in chat_id_dict.items():
         if chat_data.get('reminders_enabled', True):
             reminders_enabled_arr.append(chat_id)
         if chat_data.get('daily_timings_enabled', True):
             daily_enabled_arr.append(chat_id)
-    
-    return [reminders_enabled_arr, daily_enabled_arr]
+        durations = (chat_data.get('custom_durations', []) + [False, False, False])[:3]
+        if durations[0]:
+            custom_5.append(chat_id)
+        if durations[1]:
+            custom_10.append(chat_id)
+        if durations[2]:
+            custom_15.append(chat_id)
+
+    return [reminders_enabled_arr, daily_enabled_arr, custom_5, custom_10, custom_15]
 
 
 # Populate the arrays based on the loaded data
 async def loadArr(chat_id_dict):
-    # reminders_enabled_arr = []
-    # daily_enabled_arr = []
     global reminders_enabled_arr, daily_enabled_arr
+    global custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr
     for chat_id, chat_data in chat_id_dict.items():
         if chat_data.get('reminders_enabled', True):
             reminders_enabled_arr.append(chat_id)
         if chat_data.get('daily_timings_enabled', True):
             daily_enabled_arr.append(chat_id)
-    
-    return [reminders_enabled_arr, daily_enabled_arr]
+        durations = (chat_data.get('custom_durations', []) + [False, False, False])[:3]
+        if durations[0]:
+            custom_5_enabled_arr.append(chat_id)
+        if durations[1]:
+            custom_10_enabled_arr.append(chat_id)
+        if durations[2]:
+            custom_15_enabled_arr.append(chat_id)
+
+    return [reminders_enabled_arr, daily_enabled_arr,
+            custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr]
 
 
 # Deleteing user
@@ -658,6 +763,7 @@ async def delete_user(remove_chat_id):
     remove_chat_id = str(remove_chat_id)
     if remove_chat_id in chat_id_dict:
         chat_id_dict.pop(remove_chat_id, None)
+        _purge_chat_id_from_custom_arrays(remove_chat_id)
         text = f"User: {remove_chat_id} has been deleted\n"
         logger.info(text)
         await sbot.send_message(51719761, text)
@@ -677,7 +783,14 @@ async def shutdown():
 async def main():
     while(True):
         try:
-            await cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr)
+            await cycleCheck(
+                chat_id_dict,
+                reminders_enabled_arr,
+                daily_enabled_arr,
+                custom_5_enabled_arr,
+                custom_10_enabled_arr,
+                custom_15_enabled_arr,
+            )
 
             print("Suspend")
             await asyncio.sleep(1)
@@ -703,7 +816,8 @@ if __name__ == '__main__':
     print("User profiles have been loaded")
     logger.info("User profiles have been loaded")
     database_prayer_times = NonAsync_RefreshPrayerTime()
-    reminders_enabled_arr, daily_enabled_arr = NonAsync_loadArr(chat_id_dict)
+    (reminders_enabled_arr, daily_enabled_arr,
+     custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr) = NonAsync_loadArr(chat_id_dict)
     print("Prayer Times have been loaded")
     logger.info("Prayer Times have been loaded")
 
