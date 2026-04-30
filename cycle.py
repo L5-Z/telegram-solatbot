@@ -168,17 +168,14 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
         return
     print("RAW:", solatTimesRaw)
 
-    # Check reminder array
-    # Check daily array
-    reminders_arr = reminders_enabled_arr
-    daily_arr = daily_enabled_arr
-    if reminders_arr is None or not reminders_arr or daily_arr is None or not daily_arr:
-        logger.error("Failed to retrieve runtime reminder/daily array from local database")
+    # Empty arrays are valid state (every user opted out of that channel) —
+    # only reload from disk if BOTH arrays are empty AND the user database has
+    # entries to populate from. Don't early-return either way; daily updates
+    # and the midnight refresh must keep running independently of these arrays.
+    if (not reminders_enabled_arr) and (not daily_enabled_arr) and chat_id_dict:
+        logger.warning("Both reminder and daily arrays are empty despite users in DB; reloading from disk")
         (reminders_enabled_arr, daily_enabled_arr,
          custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr) = await loadArr(chat_id_dict)
-        return
-    #print("reminders_arr:", reminders_arr)
-    #print("daily_arr:", daily_arr)
     
     # Update times
     AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
