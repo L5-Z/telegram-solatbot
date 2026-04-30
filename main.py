@@ -247,9 +247,11 @@ async def delUser(message):
         if remove_chat_id in chat_id_dict:
             chat_id_dict.pop(remove_chat_id, None)
 
-            # Remove the chat ID from the arrays
-            reminders_enabled_arr.remove(remove_chat_id)  # Remove from the array
-            daily_enabled_arr.remove(remove_chat_id)  # Remove from the array
+            # Remove the chat ID from runtime arrays (safe — no crash if absent)
+            if remove_chat_id in reminders_enabled_arr:
+                reminders_enabled_arr.remove(remove_chat_id)
+            if remove_chat_id in daily_enabled_arr:
+                daily_enabled_arr.remove(remove_chat_id)
             _purge_chat_id_from_custom_arrays(remove_chat_id)
 
         print("User: ", remove_chat_id, " has been deleted\n")
@@ -431,7 +433,14 @@ async def stop_command(message):
     chat_id = str(message.chat.id)
     if chat_id in chat_id_dict:
         del chat_id_dict[chat_id]
+<<<<<<< HEAD
         _purge_chat_id_from_custom_arrays(chat_id)
+=======
+        if chat_id in reminders_enabled_arr:
+            reminders_enabled_arr.remove(chat_id)
+        if chat_id in daily_enabled_arr:
+            daily_enabled_arr.remove(chat_id)
+>>>>>>> 7211faa (fix: clean reminder/daily arrays on user removal in /stop, /del, delete_user)
         await save_data(chat_id_dict)
         logger.info(f"Removed {chat_id} from database.")
     await sbot.send_message(message.chat.id, "You will no longer receive notifications. Thank you for using my bot!")
@@ -763,7 +772,14 @@ async def delete_user(remove_chat_id):
     remove_chat_id = str(remove_chat_id)
     if remove_chat_id in chat_id_dict:
         chat_id_dict.pop(remove_chat_id, None)
+<<<<<<< HEAD
         _purge_chat_id_from_custom_arrays(remove_chat_id)
+=======
+        if remove_chat_id in reminders_enabled_arr:
+            reminders_enabled_arr.remove(remove_chat_id)
+        if remove_chat_id in daily_enabled_arr:
+            daily_enabled_arr.remove(remove_chat_id)
+>>>>>>> 7211faa (fix: clean reminder/daily arrays on user removal in /stop, /del, delete_user)
         text = f"User: {remove_chat_id} has been deleted\n"
         logger.info(text)
         await sbot.send_message(51719761, text)
