@@ -3,6 +3,24 @@ from logs import logger
 
 from funcs import format_text
 
+async def pre_reminder_text(prayer, masa, minutes_before):
+    prayer = prayer.capitalize()
+
+    header_art = {
+        'Subuh': '\U0001F30C',
+        'Syuruk': '\U0001F305',
+        'Zohor': '\U0001F3D9',
+        'Asar': '\U0001F307',
+        'Maghrib': '\U0001F304',
+        'Isyak': '\U0001F303',
+    }.get(prayer, '\U0001F54B')
+
+    return (
+        f"⏰ *Reminder:* {prayer} prayer in *{minutes_before} minutes* "
+        f"({masa}) {header_art}\n\n"
+        f"Prepare for prayer."
+    )
+
 async def reminder_text(chat_id, prayer, masa, next_prayer=None, next_prayer_time=None):
     
     prayer = prayer.capitalize()

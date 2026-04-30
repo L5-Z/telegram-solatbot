@@ -11,12 +11,16 @@ from scrapeAPI import *
 from blocked import *
 from storage import save_data
 from main import database_prayer_times, loadArr, delete_user
-from text import reminder_text
+from text import reminder_text, pre_reminder_text
 
 global upcoming_prayer_time
 upcoming_prayer_time = None
 global change_prayer_time
 change_prayer_time = None
+
+# Memo of (prayer_name, minutes_before, YYYY-MM-DD) tuples already fired.
+# Cleared at midnight when prayer times refresh.
+pre_reminder_sent = set()
 
 
 # Bot token
@@ -73,6 +77,35 @@ async def bulk_send_reminders(chat_ids: List[str], prayer: str, masa: str, upcom
     tasks = [send_reminder(chat_id, prayer, masa, chat_ids, upcoming_prayer_name, next_prayer, next_prayer_time) for chat_id in chat_ids]
     await asyncio.gather(*tasks)
 
+# Pre-reminder dispatch (fires N minutes before a prayer)
+async def solat_pre_reminder(chat_id, prayer, masa, minutes_before):
+    msg = await pre_reminder_text(prayer, masa, minutes_before)
+    await sbot.send_message(chat_id, msg, 'Markdown')
+
+async def send_pre_reminder(chat_id: str, prayer: str, masa: str, minutes_before: int):
+    try:
+        await solat_pre_reminder(chat_id, prayer, masa, minutes_before)
+        logger.info(f"Sent {minutes_before}-min pre-reminder to {chat_id} for {prayer}")
+        print(f"sent {minutes_before}-min pre-reminder", chat_id)
+
+    except telebot.apihelper.ApiException as e:
+        if "bot was blocked by the user" in e.result.text:
+            logger.warning(f"Bot was blocked by user {chat_id}")
+            print(f"\n\nBot was blocked by user {chat_id}\n\n")
+        else:
+            logger.error(f"An error occurred in sending pre-reminders: {e}")
+    except Exception as e:
+        if "403" in str(e) and "blocked" in str(e).lower():
+            logger.warning(f"Bot was blocked by user {chat_id} (caught in generic Exception)")
+        else:
+            logger.error(f"Unexpected error for {chat_id}: {e}")
+    finally:
+        return
+
+async def bulk_send_pre_reminders(chat_ids: List[str], prayer: str, masa: str, minutes_before: int):
+    tasks = [send_pre_reminder(chat_id, prayer, masa, minutes_before) for chat_id in chat_ids]
+    await asyncio.gather(*tasks)
+
 # Schedule the scraper to run daily at 5 AM SGT
 async def scheduleRun(chat_id_dict):
 
@@ -110,13 +143,20 @@ async def scheduleRun(chat_id_dict):
     print("Scheduled daily has been run\n")
 
 
-async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
+async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
+                     custom_5_enabled_arr=None, custom_10_enabled_arr=None,
+                     custom_15_enabled_arr=None):
 
     now = datetime.now(sg_timezone) # Use the Singapore timezone
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
 
     global upcoming_prayer_time, change_prayer_time
     global database_prayer_times
+    global pre_reminder_sent
+
+    custom_5_enabled_arr = custom_5_enabled_arr or []
+    custom_10_enabled_arr = custom_10_enabled_arr or []
+    custom_15_enabled_arr = custom_15_enabled_arr or []
     
     # Get raw prayer time data
     solatTimesRaw = database_prayer_times
@@ -134,7 +174,8 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
     daily_arr = daily_enabled_arr
     if reminders_arr is None or not reminders_arr or daily_arr is None or not daily_arr:
         logger.error("Failed to retrieve runtime reminder/daily array from local database")
-        reminders_enabled_arr, daily_enabled_arr = await loadArr(chat_id_dict)
+        (reminders_enabled_arr, daily_enabled_arr,
+         custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr) = await loadArr(chat_id_dict)
         return
     #print("reminders_arr:", reminders_arr)
     #print("daily_arr:", daily_arr)
@@ -144,6 +185,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
     if now < AM_12 + timedelta(minutes=2) and now >= AM_12:
         logger.info("Updating Prayer Times")
         database_prayer_times = await RefreshPrayerTime()
+        pre_reminder_sent.clear()
         print("Updated: ", database_prayer_times)
         logger.info("Entering deep sleep after 12:00 AM")
         await asyncio.sleep(17100)
@@ -221,7 +263,35 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
     upcoming_prayer_time = upcoming_prayer_time + timedelta(seconds=3)
     print("Alert time upcoming: ", upcoming_prayer_time)
 
-        
+    # Pre-reminder dispatch (5/10/15 min before the upcoming prayer)
+    # Sleeping 61s after a fire skips the rest of the 1-minute window so the
+    # same pre-reminder won't re-fire. Safe because slots are ≥5 min apart.
+    pre_slots = [
+        (5,  custom_5_enabled_arr),
+        (10, custom_10_enabled_arr),
+        (15, custom_15_enabled_arr),
+    ]
+    # --- Memo-based variant (uncomment + remove the sleep below to switch back) ---
+    # today_key = now.strftime('%Y-%m-%d')
+    # for minutes_before, group_arr in pre_slots:
+    #     if not group_arr:
+    #         continue
+    #     pre_time = upcoming_prayer_time - timedelta(minutes=minutes_before)
+    #     memo_key = (upcoming_prayer_name, minutes_before, today_key)
+    #     if (now >= pre_time
+    #             and now < pre_time + timedelta(minutes=1)
+    #             and memo_key not in pre_reminder_sent):
+    #         await bulk_send_pre_reminders(group_arr, upcoming_prayer_name, masa, minutes_before)
+    #         pre_reminder_sent.add(memo_key)
+    # --- end memo variant ---
+    for minutes_before, group_arr in pre_slots:
+        if not group_arr:
+            continue
+        pre_time = upcoming_prayer_time - timedelta(minutes=minutes_before)
+        if now >= pre_time and now < pre_time + timedelta(minutes=1):
+            await bulk_send_pre_reminders(group_arr, upcoming_prayer_name, masa, minutes_before)
+            await asyncio.sleep(61)
+
     # If time is within 1 minute after azan
     if now < upcoming_prayer_time + timedelta(minutes=1) and now >= upcoming_prayer_time:
         prayer_keys = list(solatTimes.keys())
@@ -238,20 +308,3 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr):
 
         await bulk_send_reminders(reminders_enabled_arr, prayer, masa, upcoming_prayer_name, next_prayer_name, next_prayer_time)
         await asyncio.sleep(61)
-
-
-    '''
-        for loop and if conditionals updated. do a new for loop and shift these one tab left when reimplementing
-        # Check if 'custom_duration' key exists in chat_info
-        if chat_info['custom_durations']:
-            # Trigger the custom reminders based on custom durations
-            for i, custom_duration in enumerate(chat_info.get('custom_durations', [])):
-                # Calculate the time difference as a timedelta
-                time_difference = last_prayer_time - timedelta(minutes=custom_duration)
-                if now >= time_difference and now <= time_difference + timedelta(minutes=1) and not chat_info['custom_reminder_sent']:
-                    # Trigger the custom reminder for slot i
-                    send_custom_reminder(sbot, chat_id, f"{prayer}", masa, custom_duration)
-                    chat_info['custom_reminder_sent'] = True
-                    t = Timer(65, set_custom_reminder_sent_false, args=(chat_info, ))
-                    t.start()
-    '''
