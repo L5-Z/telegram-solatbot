@@ -37,8 +37,9 @@ custom_5_enabled_arr = []
 custom_10_enabled_arr = []
 custom_15_enabled_arr = []
 
-def _purge_chat_id_from_custom_arrays(chat_id):
-    for arr in (custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr):
+def purge_runtime_arrays(chat_id):
+    for arr in (custom_5_enabled_arr, custom_10_enabled_arr, custom_15_enabled_arr,
+                reminders_enabled_arr, daily_enabled_arr):
         if chat_id in arr:
             arr.remove(chat_id)
 
@@ -231,36 +232,49 @@ async def addUser(message):
         await checker(new_chat_id)
         
         print("User: ", new_chat_id, " has been added\n")
-        await sbot.send_message(message.chat.id, notify)     
+        await sbot.send_message(message.chat.id, notify)
     else:
         return
+
+
+# Internal unified user deletion function
+async def _purge_user(chat_id, notify_requester=None):
+    global chat_id_dict
+    chat_id = str(chat_id)
+    if chat_id not in chat_id_dict:
+        logger.warning(f"User {chat_id} not found in database")
+        return False
+
+    chat_id_dict.pop(chat_id, None)
+    purge_runtime_arrays(chat_id)
+
+    logger.info(f"User {chat_id} has been deleted")
+    await save_data(chat_id_dict)
+    logger.info(f"Database updated after deleting user {chat_id}")
+
+    await sbot.send_message(51719761, f"User {chat_id} has been deleted")
+
+    if notify_requester:
+        await sbot.send_message(notify_requester, f"User {chat_id} has been deleted")
+
+    return True
 
 
 # ADMIN FUNCTION (51719761): REMOVE USER
 @sbot.message_handler(commands=['del'])
 async def delUser(message):
-    global reminders_enabled_arr, daily_enabled_arr
-
-    if message.chat.id == 51719761:
-        remove_chat_id = message.text.split(' ', 1)[1] # Extract text after the command
-        print("\nAdmin is deleting user: ", remove_chat_id)
-        admin_message = "Welcome Admin, the following user is being deleted:\n"
-        notify = admin_message + remove_chat_id
-
-        if remove_chat_id in chat_id_dict:
-            chat_id_dict.pop(remove_chat_id, None)
-
-            # Remove the chat ID from runtime arrays (safe — no crash if absent)
-            if remove_chat_id in reminders_enabled_arr:
-                reminders_enabled_arr.remove(remove_chat_id)
-            if remove_chat_id in daily_enabled_arr:
-                daily_enabled_arr.remove(remove_chat_id)
-            _purge_chat_id_from_custom_arrays(remove_chat_id)
-
-        print("User: ", remove_chat_id, " has been deleted\n")
-        await sbot.send_message(message.chat.id, notify)
-    else:
+    if message.chat.id != 51719761:
         return
+
+    try:
+        chat_id = message.text.split(' ', 1)[1]
+    except IndexError:
+        await sbot.send_message(message.chat.id, "Usage: /del <chat_id>")
+        return
+
+    success = await _purge_user(chat_id, notify_requester=message.chat.id)
+    if not success:
+        await sbot.send_message(message.chat.id, f"User {chat_id} not found in database")
     
 # ADMIN FUNCTION (51719761): PRINT ALL USER ID
 @sbot.message_handler(commands=['dump'])
@@ -375,8 +389,6 @@ async def exitBot(message):
         logger.info("Admin has initiated bot shutdown.")
         await sbot.send_message(message.chat.id, "Bot shutting down.")
         await shutdown()
-        # shutdown() only persists state; force-exit the process so the
-        # asyncio loop and Telegram polling actually stop.
         os._exit(0)
     else:
         return
@@ -414,23 +426,26 @@ async def start_command(message):
     # Intro message
     intro_message = "Assalamu'alaikum! I am a bot that provides prayer time notifications for Singapore.\n\n"
     intro_message += "I fetch prayer times direct from [MUIS](https://www.muis.gov.sg), the religious authority for Muslims in Singapore!\n"
-    intro_message += "Prayer times are fetched from [here](https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json)!\n"
+    intro_message += "Prayer times are fetched from [here](https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json)!\n\n"
     intro_message += "What I can do:\n"
-    intro_message += "- Send you azan reminders at each prayer time (with the next upcoming prayer in the works!)\n"
-    intro_message += "- Optionally send the full daily prayer timetable at 5 AM each morning\n"
-    intro_message += "- Provides the Qiblat direction for Singapore\n\n"
+    intro_message += "- Send you azan reminders at each prayer time\n"
+    intro_message += "- Send the full daily prayer times at 5 AM each morning\n"
+    intro_message += "- Provide the Qiblat direction for Singapore\n\n"
     # Welcome message
     welcome_message = "Thanks for using my bot!\n\n"
-    welcome_message += "Do /help for a list of commands\n"
-    welcome_message += "Reminders are ON by default, do /toggle to turn them on\n"
-    welcome_message += "Daily Prayer Time notifications (at 5AM) are ON by default, do /daily to turn them on\n\n\n"
-    welcome_message += "Please run /stop to stop receiving notifications instead of blocking the bot\n"
-    welcome_message += "Current Version: v1.7.1 (Stable Release)\n"
-    welcome_message += "Updated and Patched as of 25/3/26\n"
+    welcome_message += "Note:\n"
+    welcome_message += "- Do /help for a list of commands\n"
+    welcome_message += "- Reminders are ON by default, do /toggle to turn them off\n"
+    welcome_message += "- Daily Prayer Time notifications (at 5AM) are ON by default, do /daily to turn them off\n\n"
+    welcome_message += "- Please run /stop to stop receiving notifications instead of blocking the bot\n\n"
+    welcome_message += "=============================\n"
+    welcome_message += "Current Version: v2.0.0 (Stable Release)\n"
+    welcome_message += "Updated and Patched as of 1/5/26\n"
     #welcome_message += "Do /patch to view patchnotes\n\n"
-    welcome_message += "\n\nBot made by L5Z (Faatih) :)"
+    welcome_message += "\nBot made by L5Z (Faatih) :)"
     await checker(message.chat.id)
     await sbot.send_message(message.chat.id, intro_message, parse_mode='Markdown', reply_markup=main_menu)
+    await asyncio.sleep(10)
     await help_command(message)
     await sbot.send_message(message.chat.id, welcome_message)
 
@@ -442,7 +457,7 @@ async def stop_command(message):
     chat_id = str(message.chat.id)
     if chat_id in chat_id_dict:
         del chat_id_dict[chat_id]
-        _purge_chat_id_from_custom_arrays(chat_id)
+        purge_runtime_arrays(chat_id)
         await save_data(chat_id_dict)
         logger.info(f"Removed {chat_id} from database.")
     await sbot.send_message(message.chat.id, "You will no longer receive notifications. Thank you for using my bot!")
@@ -684,6 +699,7 @@ async def help_command(message):
       "/timings - Get current prayer times",
       "/daily - Toggle daily prayer times (at 5AM) notifications on or off",
       "/prereminder - Toggle 5/10/15 min pre-prayer reminders",
+      "/upcoming - Get prayer times up to a week ahead (not inclusive of today)",
       # "/list - List current slots\n",
       # "/customreminder [<index>] <minutes> - Set or edit a custom reminder (0 minutes to disable)\n(e.g. /customreminder 30 creates a new 30 minute pre-reminder while /customreminder 1 45 edits the pre-reminder in Slot 1 to 45 minutes.\nOmitting <index> changes the bot to 'create' mode\nNote: This is the only command with a format)\n",
       # "/patch - Lists updates to the bot", 
@@ -777,17 +793,7 @@ async def loadArr(chat_id_dict):
 
 # Deleteing user
 async def delete_user(remove_chat_id):
-    global chat_id_dict
-    remove_chat_id = str(remove_chat_id)
-    if remove_chat_id in chat_id_dict:
-        chat_id_dict.pop(remove_chat_id, None)
-        _purge_chat_id_from_custom_arrays(remove_chat_id)
-        text = f"User: {remove_chat_id} has been deleted\n"
-        logger.info(text)
-        await sbot.send_message(51719761, text)
-
-        await save_data(chat_id_dict)
-        logger.info(f"Updated database.")
+    await _purge_user(remove_chat_id, notify_requester=None)
         
 
 # Shutdown function to handle cleanup before exiting
