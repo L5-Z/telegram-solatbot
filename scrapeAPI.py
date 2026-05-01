@@ -217,33 +217,65 @@ async def printTimes():
     logger.error("Failed to retrieve prayer times.")
     return "Failed to retrieve prayer times."
 
-# Prints the upcoming timings (filters out passed prayers)
+# Fetches the full MUIS JSON (all dates for the year, keyed by YYYY-MM-DD)
+async def GetPrayerTimeRaw():
+    url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json'
+    headers = {
+      'Cache-Control': 'no-cache',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    }
+
+    try:
+      response = requests.get(url, headers=headers)
+      if response.status_code == 200:
+        return response.json()
+      logger.error(f"Failed to retrieve full MUIS data. Status code: {response.status_code}")
+      return None
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error: {e}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON: {e}")
+        return None
+
+# Prints prayer times for the next 7 days (strictly future, tomorrow through day 7)
 async def printUpcomingTimes():
-  prayer_times = await GetPrayerTime()
-  prayer_times = await formatTimesData(prayer_times)
-  if prayer_times is None:
-    logger.error("Failed to print prayer time data in printUpcomingTimes()")
-    return
-  hijri_date = prayer_times[1]
-  prayer_times = prayer_times[0]
-
-  if prayer_times is not None:
-    prayer_date = datetime.now(sg_timezone).strftime("%d %B %Y")
-    hijri_date = hijri_date.get('hijri_date', 'N/A')
-
-    subuh_time = prayer_times.get('subuh', 'N/A')
-    syuruk_time = prayer_times.get('syuruk', 'N/A')
-    zohor_time = prayer_times.get('zohor', 'N/A')
-    asar_time = prayer_times.get('asar', 'N/A')
-    maghrib_time = prayer_times.get('maghrib', 'N/A')
-    isyak_time = prayer_times.get('isyak', 'N/A')
-
-    message = await upcoming_prayertimes(prayer_date=prayer_date, hijri_date=hijri_date, subuh_time=subuh_time, syuruk_time=syuruk_time, zohor_time=zohor_time, asar_time=asar_time, maghrib_time=maghrib_time, isyak_time=isyak_time)
-
-    logger.info("Successfully formatted upcoming prayer times")
-    return message
-  else:
-    logger.error("Failed to retrieve prayer times.")
+  raw = await GetPrayerTimeRaw()
+  if raw is None:
+    logger.error("Failed to retrieve prayer times in printUpcomingTimes()")
     return "Failed to retrieve prayer times."
+
+  today = datetime.now(sg_timezone).date()
+  days_data = []
+  for offset in range(1, 8):
+    target = today + timedelta(days=offset)
+    key = target.strftime("%Y-%m-%d")
+    entry = raw.get(key)
+    if entry is None:
+      logger.warning(f"No MUIS data for {key}")
+      continue
+    formatted = await formatTimesData(entry)
+    if formatted is None:
+      continue
+    times = formatted[0]
+    dates = formatted[1]
+    days_data.append({
+      'date': target.strftime("%a, %d %b %Y"),
+      'hijri': dates.get('hijri_date', 'N/A'),
+      'subuh': times.get('subuh', 'N/A'),
+      'syuruk': times.get('syuruk', 'N/A'),
+      'zohor': times.get('zohor', 'N/A'),
+      'asar': times.get('asar', 'N/A'),
+      'maghrib': times.get('maghrib', 'N/A'),
+      'isyak': times.get('isyak', 'N/A'),
+    })
+
+  if not days_data:
+    logger.error("No upcoming prayer time data could be assembled")
+    return "Failed to retrieve upcoming prayer times."
+
+  message = await upcoming_prayertimes(days_data)
+  logger.info(f"Successfully formatted {len(days_data)} upcoming prayer times")
+  return message
 
 
