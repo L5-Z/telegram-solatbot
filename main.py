@@ -414,11 +414,11 @@ async def start_command(message):
     # Intro message
     intro_message = "Assalamu'alaikum! I am a bot that provides prayer time notifications for Singapore.\n\n"
     intro_message += "I fetch prayer times direct from [MUIS](https://www.muis.gov.sg), the religious authority for Muslims in Singapore!\n"
-    intro_message += "Prayer times are fetched from [here](https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json)!\n"
+    intro_message += "Prayer times are fetched from [here](https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json)!\n\n"
     intro_message += "What I can do:\n"
     intro_message += "- Send you azan reminders at each prayer time (with the next upcoming prayer in the works!)\n"
     intro_message += "- Optionally send the full daily prayer timetable at 5 AM each morning\n"
-    intro_message += "- Provides the Qiblat direction for Singapore\n\n"
+    intro_message += "- Provide the Qiblat direction for Singapore\n\n"
     # Welcome message
     welcome_message = "Thanks for using my bot!\n\n"
     welcome_message += "Do /help for a list of commands\n"
