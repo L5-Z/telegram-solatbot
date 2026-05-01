@@ -34,7 +34,7 @@ async def reminder_text(chat_id, prayer, masa, next_prayer=None, next_prayer_tim
             reminder_message += f"*Next prayer:* {next_prayer.capitalize()} at *{next_prayer_time}*\n"
 
         if prayer == "Syuruk":
-            reminder_message += "\u2600\uFE0F The sun is up! \u2600\uFE0F"
+            reminder_message += "☀️ The sun is up! ☀️"
         else:
             reminder_message += "May your fardh prayer be blessed! \U0001F932"
 
@@ -55,7 +55,7 @@ async def current_prayertimes(prayer_date=None, hijri_date=None, subuh_time=None
     message += f"          *Asar:* {asar_time}\n\n"
     message += f"          *Maghrib:* {maghrib_time}\n\n"
     message += f"          *Isyak:* {isyak_time}\n"
-    message += f"\u00A0 ㅤ"
+    message += f"  ㅤ"
 
     # Escape special chars
     message = await format_text(message)
@@ -64,26 +64,23 @@ async def current_prayertimes(prayer_date=None, hijri_date=None, subuh_time=None
 
 async def upcoming_prayertimes(days=None):
     message = ""
-    message += u"\u23F0"
-    message += f"   *Upcoming Prayer Times*   "
-    message += u"\u23F0"
-    message += f"\n\n"
+    message += u"\U0001F54C"
+    message += "   *Upcoming Prayer Times*   "
+    message += u"\U0001F54C"
+    message += "\n\n"
 
     if not days:
-        message += f"_No upcoming prayer times available._\n"
+        message += "No upcoming prayer times available.\n"
     else:
         for d in days:
             hijri = d.get('hijri') or 'N/A'
             if hijri and hijri != 'N/A':
-                message += f"*{d['date']}*  ({hijri})\n"
+                message += f"*{d['date']}*  (_{hijri}_)\n"
             else:
                 message += f"*{d['date']}*\n"
-            message += f"   Subuh {d['subuh']} • Syuruk {d['syuruk']} • Zohor {d['zohor']}\n"
-            message += f"   Asar {d['asar']} • Maghrib {d['maghrib']} • Isyak {d['isyak']}\n\n"
+            times = [d['subuh'], d['syuruk'], d['zohor'], d['asar'], d['maghrib'], d['isyak']]
+            message += f"{' • '.join(times[:3])}\n{' • '.join(times[3:])}\n\n"
 
-    message += f"\u00A0 \u3164"
-
-    # Escape special chars
-    message = await format_text(message)
+    message += "  ㅤ"
 
     return message
