@@ -55,7 +55,7 @@ async def current_prayertimes(prayer_date=None, hijri_date=None, subuh_time=None
     message += f"          *Asar:* {asar_time}\n\n"
     message += f"          *Maghrib:* {maghrib_time}\n\n"
     message += f"          *Isyak:* {isyak_time}\n"
-    message += f"  ㅤ"
+    message += f"  ㅤ"
 
     # Escape special chars
     message = await format_text(message)
@@ -75,12 +75,12 @@ async def upcoming_prayertimes(days=None):
         for d in days:
             hijri = d.get('hijri') or 'N/A'
             if hijri and hijri != 'N/A':
-                message += f"*{d['date']}*  (_{hijri}_)\n"
+                message += f"*{d['date']}*  \\(_{hijri}_\\)\n"
             else:
                 message += f"*{d['date']}*\n"
             times = [d['subuh'], d['syuruk'], d['zohor'], d['asar'], d['maghrib'], d['isyak']]
             message += f"{' • '.join(times[:3])}\n{' • '.join(times[3:])}\n\n"
 
-    message += "  ㅤ"
+    message += "  ㅤ"
 
     return message
