@@ -413,6 +413,8 @@ async def checker(chat_id):
 async def start_command(message):
     # Intro message
     intro_message = "Assalamu'alaikum! I am a bot that provides prayer time notifications for Singapore.\n\n"
+    intro_message += "I fetch prayer times direct from [MUIS](https://www.muis.gov.sg), the religious authority for Muslims in Singapore!\n"
+    intro_message += "Prayer times are fetched from [here](https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json)!\n"
     intro_message += "What I can do:\n"
     intro_message += "- Send you azan reminders at each prayer time (with the next upcoming prayer in the works!)\n"
     intro_message += "- Optionally send the full daily prayer timetable at 5 AM each morning\n"
@@ -428,7 +430,7 @@ async def start_command(message):
     #welcome_message += "Do /patch to view patchnotes\n\n"
     welcome_message += "\n\nBot made by L5Z (Faatih) :)"
     await checker(message.chat.id)
-    await sbot.send_message(message.chat.id, intro_message, reply_markup=main_menu)
+    await sbot.send_message(message.chat.id, intro_message, parse_mode='Markdown', reply_markup=main_menu)
     await help_command(message)
     await sbot.send_message(message.chat.id, welcome_message)
 
