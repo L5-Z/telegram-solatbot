@@ -6,7 +6,7 @@ import json
 #import time
 from datetime import *
 from logs import logger
-from text import current_prayertimes
+from text import current_prayertimes, upcoming_prayertimes
 
 sg_timezone = pytz.timezone('Asia/Singapore')
 
@@ -191,7 +191,7 @@ async def printTimes():
     return
   hijri_date = prayer_times[1]
   prayer_times = prayer_times[0]
-  
+
 
   if prayer_times is not None:
     # Extract the date and Hijri information
@@ -216,5 +216,66 @@ async def printTimes():
   else:
     logger.error("Failed to retrieve prayer times.")
     return "Failed to retrieve prayer times."
+
+# Fetches the full MUIS JSON (all dates for the year, keyed by YYYY-MM-DD)
+async def GetPrayerTimeRaw():
+    url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json'
+    headers = {
+      'Cache-Control': 'no-cache',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    }
+
+    try:
+      response = requests.get(url, headers=headers)
+      if response.status_code == 200:
+        return response.json()
+      logger.error(f"Failed to retrieve full MUIS data. Status code: {response.status_code}")
+      return None
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error: {e}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Error decoding JSON: {e}")
+        return None
+
+# Prints prayer times for the next 7 days (strictly future, tomorrow through day 7)
+async def printUpcomingTimes():
+  raw = await GetPrayerTimeRaw()
+  if raw is None:
+    logger.error("Failed to retrieve prayer times in printUpcomingTimes()")
+    return "Failed to retrieve prayer times."
+
+  today = datetime.now(sg_timezone).date()
+  days_data = []
+  for offset in range(1, 8):
+    target = today + timedelta(days=offset)
+    key = target.strftime("%Y-%m-%d")
+    entry = raw.get(key)
+    if entry is None:
+      logger.warning(f"No MUIS data for {key}")
+      continue
+    formatted = await formatTimesData(entry)
+    if formatted is None:
+      continue
+    times = formatted[0]
+    dates = formatted[1]
+    days_data.append({
+      'date': target.strftime("%a, %d %b %Y"),
+      'hijri': dates.get('hijri_date', 'N/A'),
+      'subuh': times.get('subuh', 'N/A'),
+      'syuruk': times.get('syuruk', 'N/A'),
+      'zohor': times.get('zohor', 'N/A'),
+      'asar': times.get('asar', 'N/A'),
+      'maghrib': times.get('maghrib', 'N/A'),
+      'isyak': times.get('isyak', 'N/A'),
+    })
+
+  if not days_data:
+    logger.error("No upcoming prayer time data could be assembled")
+    return "Failed to retrieve upcoming prayer times."
+
+  message = await upcoming_prayertimes(days_data)
+  logger.info(f"Successfully formatted {len(days_data)} upcoming prayer times")
+  return message
 
 
