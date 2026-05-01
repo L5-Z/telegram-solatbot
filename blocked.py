@@ -44,7 +44,7 @@ async def block_scan(chat_id_dict, logger):
 
   
 # Blocked user process
-async def block_check(chat_id_dict, logger):
+async def block_check(chat_id_dict, logger, delete_user_func=None):
     logger.info("Block Check...")
     print("Block Check...")
     # Remove blocked users from chat_id_dict or take other appropriate action
@@ -55,20 +55,25 @@ async def block_check(chat_id_dict, logger):
         text = f"Bot was blocked by the following users: {', '.join(map(str, blocked_users))}"
         logger.info(text)
         await sbot.send_message(51719761, text)
-            
-        # Remove blocked users from database
-        for blocked_user in blocked_users:
-            chat_id_dict.pop(blocked_user, None)
-            print("Removed blocker: ", blocked_user)
-        
-        text = f"Removed {num_blocked} blocked users from the chat_id_dict database."
+
+        # Remove blocked users from database using unified delete function
+        if delete_user_func:
+            for blocked_user in blocked_users:
+                await delete_user_func(blocked_user)
+        else:
+            # Fallback if delete_user_func not provided (shouldn't happen in normal operation)
+            for blocked_user in blocked_users:
+                chat_id_dict.pop(blocked_user, None)
+                print("Removed blocker: ", blocked_user)
+
+        text = f"Removed {num_blocked} blocked users from the database."
         logger.info(text)
         await sbot.send_message(51719761, text)
 
     else:
         logger.info("No users have blocked the bot. Proceeding...")
         print("No blocks")
-    
+
     await sbot.send_message(51719761, "Completed block check. Proceeding with scheduled tasks.")
 
 '''

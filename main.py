@@ -350,10 +350,10 @@ async def blockedUsers(message):
         print("\nAdmin is viewing blockers")
 
         admin_message = "Welcome Admin, here are the blockers:\n"
-        await sbot.send_message(message.chat.id, admin_message)  
-        await block_check(chat_id_dict, logger)
+        await sbot.send_message(message.chat.id, admin_message)
+        await block_check(chat_id_dict, logger, delete_user)
 
-        print("The blockers have been displayed.\n")      
+        print("The blockers have been displayed.\n")
     else:
         return
 
@@ -702,6 +702,7 @@ async def help_command(message):
   await checker(message.chat.id)
   # List of available commands
   commands = [
+      "/stop - Stops the bot",
       "/menu - Displays menu buttons",
       "/menu_off - Disables menu buttons",
       "/settings - Displays current notification settings",
