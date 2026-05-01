@@ -276,6 +276,16 @@ async def delUser(message):
     if not success:
         await sbot.send_message(message.chat.id, f"User {chat_id} not found in database")
     
+    try:
+        chat_id = message.text.split(' ', 1)[1]
+    except IndexError:
+        await sbot.send_message(message.chat.id, "Usage: /del <chat_id>")
+        return
+
+    success = await _purge_user(chat_id, notify_requester=message.chat.id)
+    if not success:
+        await sbot.send_message(message.chat.id, f"User {chat_id} not found in database")
+    
 # ADMIN FUNCTION (51719761): PRINT ALL USER ID
 @sbot.message_handler(commands=['dump'])
 async def dumpDict(message):
