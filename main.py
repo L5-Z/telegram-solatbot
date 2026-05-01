@@ -1,5 +1,6 @@
 from logs import logger
 import asyncio
+import os
 import telebot
 from telebot import apihelper
 from telebot.async_telebot import AsyncTeleBot
@@ -372,7 +373,11 @@ async def exitBot(message):
     if message.chat.id == 51719761:
         print("Admin has initiated bot shutdown.")
         logger.info("Admin has initiated bot shutdown.")
+        await sbot.send_message(message.chat.id, "Bot shutting down.")
         await shutdown()
+        # shutdown() only persists state; force-exit the process so the
+        # asyncio loop and Telegram polling actually stop.
+        os._exit(0)
     else:
         return
 
