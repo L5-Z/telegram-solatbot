@@ -465,11 +465,7 @@ async def start_command(message):
 async def stop_command(message):
     await checker(message.chat.id)
     chat_id = str(message.chat.id)
-    if chat_id in chat_id_dict:
-        del chat_id_dict[chat_id]
-        purge_runtime_arrays(chat_id)
-        await save_data(chat_id_dict)
-        logger.info(f"Removed {chat_id} from database.")
+    await _purge_user(chat_id, notify_requester=message.chat.id)
     await sbot.send_message(message.chat.id, "You will no longer receive notifications. Thank you for using my bot!")
     await sbot.send_message('51719761', f"[Admin] Current User Left: {chat_id}")
 
