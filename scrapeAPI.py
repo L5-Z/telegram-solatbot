@@ -6,7 +6,7 @@ import json
 #import time
 from datetime import *
 from logs import logger
-from text import current_prayertimes
+from text import current_prayertimes, upcoming_prayertimes
 
 sg_timezone = pytz.timezone('Asia/Singapore')
 
@@ -191,7 +191,7 @@ async def printTimes():
     return
   hijri_date = prayer_times[1]
   prayer_times = prayer_times[0]
-  
+
 
   if prayer_times is not None:
     # Extract the date and Hijri information
@@ -212,6 +212,35 @@ async def printTimes():
     logger.info("Successfully formatted prayer times")
 
     # Send the message with prayer times
+    return message
+  else:
+    logger.error("Failed to retrieve prayer times.")
+    return "Failed to retrieve prayer times."
+
+# Prints the upcoming timings (filters out passed prayers)
+async def printUpcomingTimes():
+  prayer_times = await GetPrayerTime()
+  prayer_times = await formatTimesData(prayer_times)
+  if prayer_times is None:
+    logger.error("Failed to print prayer time data in printUpcomingTimes()")
+    return
+  hijri_date = prayer_times[1]
+  prayer_times = prayer_times[0]
+
+  if prayer_times is not None:
+    prayer_date = datetime.now(sg_timezone).strftime("%d %B %Y")
+    hijri_date = hijri_date.get('hijri_date', 'N/A')
+
+    subuh_time = prayer_times.get('subuh', 'N/A')
+    syuruk_time = prayer_times.get('syuruk', 'N/A')
+    zohor_time = prayer_times.get('zohor', 'N/A')
+    asar_time = prayer_times.get('asar', 'N/A')
+    maghrib_time = prayer_times.get('maghrib', 'N/A')
+    isyak_time = prayer_times.get('isyak', 'N/A')
+
+    message = await upcoming_prayertimes(prayer_date=prayer_date, hijri_date=hijri_date, subuh_time=subuh_time, syuruk_time=syuruk_time, zohor_time=zohor_time, asar_time=asar_time, maghrib_time=maghrib_time, isyak_time=isyak_time)
+
+    logger.info("Successfully formatted upcoming prayer times")
     return message
   else:
     logger.error("Failed to retrieve prayer times.")

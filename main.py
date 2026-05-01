@@ -126,6 +126,8 @@ async def handle_click(message):
         await sbot.send_message(message.chat.id, "Edit notification settings with the toggle buttons below:", reply_markup=toggle_menu)
     elif message.text == 'Current Timings' or message.text == '/timings':
         await timings_command(message)
+    elif message.text == 'Upcoming Timings' or message.text == '/upcoming':
+        await upcoming_command(message)
     elif message.text == 'Help' or '/help' in message.text:
         await help_command(message)
     elif message.text == 'Reminders' or message.text == '/toggle':
@@ -459,6 +461,13 @@ async def timings_command(message):
     await checker(message.chat.id)
     reply = await printTimes()
     # Send the message with prayer times
+    await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
+
+# /upcoming command handler
+@sbot.message_handler(commands=['upcoming'])
+async def upcoming_command(message):
+    await checker(message.chat.id)
+    reply = await printUpcomingTimes()
     await sbot.send_message(message.chat.id, reply, 'MarkdownV2')
 
 # /qiblat command handler
