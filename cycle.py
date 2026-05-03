@@ -10,7 +10,8 @@ from typing import List
 from scrapeAPI import *
 from blocked import *
 from storage import save_data
-from main import database_prayer_times, loadArr, delete_user
+import state
+from state import sbot, loadArr, delete_user, main_menu
 from text import reminder_text, pre_reminder_text
 
 global upcoming_prayer_time
@@ -21,16 +22,6 @@ change_prayer_time = None
 # Memo of (prayer_name, minutes_before, YYYY-MM-DD) tuples already fired.
 # Cleared at midnight when prayer times refresh.
 pre_reminder_sent = set()
-
-
-# Bot token
-with open('botKey.txt', 'r') as file:
-    bot_key = str(file.read())
-
-TELEGRAM_BOT_TOKEN = bot_key
-
-# Create a Bot instance with bot token
-sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
 
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
@@ -151,7 +142,6 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     new_day = now.replace(hour=23, minute=59, second=0, microsecond=0)
 
     global upcoming_prayer_time, change_prayer_time
-    global database_prayer_times
     global pre_reminder_sent
 
     custom_5_enabled_arr = custom_5_enabled_arr or []
@@ -159,11 +149,11 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     custom_15_enabled_arr = custom_15_enabled_arr or []
     
     # Get raw prayer time data
-    solatTimesRaw = database_prayer_times
+    solatTimesRaw = state.database_prayer_times
     if solatTimesRaw is None or not solatTimesRaw:
         logger.error("Failed to retrieve prayer times from local database scan")
         logger.info("Fetching from API database")
-        database_prayer_times = await RefreshPrayerTime()
+        state.database_prayer_times = await RefreshPrayerTime()
         logger.info("Successfully fetched")
         return
     print("RAW:", solatTimesRaw)
@@ -181,9 +171,9 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
     if now < AM_12 + timedelta(minutes=2) and now >= AM_12:
         logger.info("Updating Prayer Times")
-        database_prayer_times = await RefreshPrayerTime()
+        state.database_prayer_times = await RefreshPrayerTime()
         pre_reminder_sent.clear()
-        print("Updated: ", database_prayer_times)
+        print("Updated: ", state.database_prayer_times)
         logger.info("Entering deep sleep after 12:00 AM")
         await asyncio.sleep(17100)
         return

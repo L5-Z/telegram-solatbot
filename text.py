@@ -16,9 +16,8 @@ async def pre_reminder_text(prayer, masa, minutes_before):
     }.get(prayer, '\U0001F54B')
 
     return (
-        f"⏰ *Reminder:* {prayer} prayer in *{minutes_before} minutes* "
+        f"⏰ *Reminder:* {prayer} in *{minutes_before} minutes* "
         f"({masa}) {header_art}\n\n"
-        f"Prepare for prayer."
     )
 
 async def reminder_text(chat_id, prayer, masa, next_prayer=None, next_prayer_time=None):
@@ -90,9 +89,11 @@ async def upcoming_prayertimes(days=None):
                 message += f"*{d['date']}*  \\(_{hijri}_\\)\n"
             else:
                 message += f"*{d['date']}*\n"
-            times = [d['subuh'], d['syuruk'], d['zohor'], d['asar'], d['maghrib'], d['isyak']]
-            message += f"{' • '.join(times[:3])}\n{' • '.join(times[3:])}\n\n"
+            prayer_keys = ['subuh', 'syuruk', 'zohor', 'asar', 'maghrib', 'isyak']
+            times = [f"{key[:3].upper()}@{d[key]}" for key in prayer_keys]
+            message += f"{' • '.join(times[:2])}\n{' • '.join(times[2:4])}\n{' • '.join(times[4:])}\n\n"
 
-    message += "  ㅤ"
+    message = message[:-1]  # Remove one newline
+    message += "  ㅤ"
 
     return message
