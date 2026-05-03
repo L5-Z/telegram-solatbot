@@ -33,7 +33,7 @@ async def solat_reminder(chat_id, prayer, masa, next_prayer=None, next_prayer_ti
     reminder_message = await reminder_text(chat_id, prayer, masa, next_prayer, next_prayer_time)
 
     # Send message
-    await sbot.send_message(chat_id, reminder_message, 'Markdown')
+    await sbot.send_message(chat_id, reminder_message, 'Markdown', reply_markup=main_menu)
 
 
 # Execute the send_reminder
@@ -147,7 +147,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     custom_5_enabled_arr = custom_5_enabled_arr or []
     custom_10_enabled_arr = custom_10_enabled_arr or []
     custom_15_enabled_arr = custom_15_enabled_arr or []
-    
+
     # Get raw prayer time data
     solatTimesRaw = state.database_prayer_times
     if solatTimesRaw is None or not solatTimesRaw:
