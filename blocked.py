@@ -2,19 +2,11 @@ import pytz
 import datetime
 from logs import logger
 import telebot
-from telebot.async_telebot import AsyncTeleBot
 from telebot.apihelper import ApiTelegramException
 from telebot.types import *
 from datetime import *
 
-# Bot token
-with open('botKey.txt', 'r') as file:
-    bot_key = str(file.read())
-
-TELEGRAM_BOT_TOKEN = bot_key
-
-# Create a Bot instance with bot token
-sbot = AsyncTeleBot(TELEGRAM_BOT_TOKEN)
+from state import sbot
 
 # Set the timezone to Singapore (Asia/Singapore)
 sg_timezone = pytz.timezone('Asia/Singapore')
