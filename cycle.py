@@ -11,7 +11,7 @@ from scrapeAPI import *
 from blocked import *
 from storage import save_data
 import state
-from state import sbot, loadArr, delete_user, main_menu
+from state import sbot, loadArr, delete_user
 from text import reminder_text, pre_reminder_text
 
 global upcoming_prayer_time
@@ -147,7 +147,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     custom_5_enabled_arr = custom_5_enabled_arr or []
     custom_10_enabled_arr = custom_10_enabled_arr or []
     custom_15_enabled_arr = custom_15_enabled_arr or []
-    
+
     # Get raw prayer time data
     solatTimesRaw = state.database_prayer_times
     if solatTimesRaw is None or not solatTimesRaw:

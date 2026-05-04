@@ -6,6 +6,7 @@ from logs import logger
 from state import (
     sbot, chat_id_dict, is_admin, ADMIN_CHAT_ID,
     _purge_user, checker, delete_user, shutdown,
+    main_menu
 )
 from storage import save_data
 from blocked import block_check
@@ -28,7 +29,7 @@ async def announce(message):
             continue
         logger.info(f"Attempting to send announcement to {chat_id}")
         try:
-            await sbot.send_message(chat_id, announcement_text)
+            await sbot.send_message(chat_id, announcement_text, reply_markup=main_menu)
             logger.info(f"Sent announcement to {chat_id}")
             print("sent announcement", chat_id)
         except apihelper.ApiException as e:
