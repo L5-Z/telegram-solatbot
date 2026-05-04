@@ -42,7 +42,7 @@ async def reminder_text(chat_id, prayer, masa, next_prayer=None, next_prayer_tim
     reminder_message = f"{header_art} It is now *{prayer} ({masa})* {header_art}\n\n"
 
     if prayer == "Syuruk":
-        reminder_message += "☀️ The sun is up! ☀️"
+        reminder_message += "☀️ The sun is up! ☀️\n"
     else:
         reminder_message += "May your fardh prayer be blessed! \U0001F932\n"
 
