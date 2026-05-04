@@ -16,7 +16,7 @@ async def pre_reminder_text(prayer, masa, minutes_before):
     }.get(prayer, '\U0001F54B')
 
     return (
-        f"⏰ *Reminder:* {prayer} in *{minutes_before} minutes* "
+        f"⏰ *Reminder:*\n{prayer} in *{minutes_before} minutes* "
         f"({masa}) {header_art}\n\n"
     )
 
@@ -47,7 +47,7 @@ async def reminder_text(chat_id, prayer, masa, next_prayer=None, next_prayer_tim
         reminder_message += "May your fardh prayer be blessed! \U0001F932\n"
 
     if next_prayer and next_prayer_time:
-        reminder_message += f"*Next prayer:* {next_prayer.capitalize()} at *{next_prayer_time}*"
+        reminder_message += f"_Next prayer:_ {next_prayer.capitalize()} at _{next_prayer_time}_"
 
     return reminder_message
 
