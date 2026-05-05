@@ -291,12 +291,12 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
         next_prayer_name = None
         next_prayer_time = None
         if prayer in prayer_keys:
-            current_index = prayer_keys.index(prayer)
-            if current_index < len(prayer_keys) - 1:
-                next_prayer_name = prayer_keys[current_index + 1]
-                next_prayer_time = solatTimes[next_prayer_name]
+            if prayer == 'isyak':
+                next_prayer_name = 'subuh'  # next day
+                next_prayer_time = await get_tomorrow_subuh() or solatTimes[next_prayer_name]
             else:
-                next_prayer_name = prayer_keys[0]
+                current_index = prayer_keys.index(prayer)
+                next_prayer_name = prayer_keys[current_index + 1]
                 next_prayer_time = solatTimes[next_prayer_name]
 
         await bulk_send_reminders(reminders_enabled_arr, prayer, masa, upcoming_prayer_name, next_prayer_name, next_prayer_time)

@@ -10,36 +10,32 @@ from text import current_prayertimes, upcoming_prayertimes
 
 sg_timezone = pytz.timezone('Asia/Singapore')
 
+def _fetch_timetable():
+    url = 'https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json'
+    headers = {
+        'Cache-Control': 'no-cache',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        logger.error(f"_fetch_timetable: status {response.status_code}")
+    except Exception as e:
+        logger.error(f"_fetch_timetable error: {e}")
+    return None
+
 # ASYNC Function to scrape prayer times from the website
 async def GetPrayerTime():
-    url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json'
-    headers = {
-      'Cache-Control': 'no-cache',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-    }
-
-    try:
-      response = requests.get(url, headers=headers)
-      if response.status_code == 200:
-        data = response.json()
-        # Use today's date as the key (format: YYYY-MM-DD)
+    data = _fetch_timetable()
+    if data:
         today_key = datetime.now(sg_timezone).strftime("%Y-%m-%d")
         prayer_times = data.get(today_key)
         if prayer_times:
-          logger.info("Successfully retrieved prayer times for today")
-          return prayer_times
-        else:
-          logger.error("No prayer times found for today")
-          return None
-      else:
-        logger.error(f"Failed to retrieve data from MUIS. Status code: {response.status_code}")
-        return None
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error: {e}")
-        return None
-    except json.JSONDecodeError as e:
-        logger.error(f"Error decoding JSON: {e}")
-        return None
+            logger.info("Successfully retrieved prayer times for today")
+            return prayer_times
+        logger.error("No prayer times found for today")
+    return None
     
 '''async def GetPrayerTime():
   url = f'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime?v=${str(int(time.time()))}'
@@ -60,52 +56,28 @@ async def GetPrayerTime():
 
 # Function to scrape prayer times from the website
 def NonAsync_GetPrayerTime():
-  url = f'https://isomer-user-content.by.gov.sg/muis_prayers_timetable.json'
-  headers = {
-    'Cache-Control': 'no-cache',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-  }
-
-  try:
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-      data = response.json()
-      # Use today's date as the key (format: YYYY-MM-DD)
-      today_key = datetime.now(sg_timezone).strftime("%Y-%m-%d")
-      prayer_times = data.get(today_key)
-      if prayer_times:
-        logger.info("Successfully retrieved prayer times for today")
-        return prayer_times
-      else:
+    data = _fetch_timetable()
+    if data:
+        today_key = datetime.now(sg_timezone).strftime("%Y-%m-%d")
+        prayer_times = data.get(today_key)
+        if prayer_times:
+            logger.info("Successfully retrieved prayer times for today")
+            return prayer_times
         logger.error("No prayer times found for today")
-        return None
-    else:
-      logger.error(f"Failed to retrieve data from MUIS. Status code: {response.status_code}")
-      return None
-  except requests.exceptions.RequestException as e:
-    logger.error(f"Error: {e}")
     return None
-  except json.JSONDecodeError as e:
-    logger.error(f"Error decoding JSON: {e}")
+
+async def get_tomorrow_subuh():
+    data = _fetch_timetable()
+    if data:
+        tomorrow_key = (datetime.now(sg_timezone) + timedelta(days=1)).strftime("%Y-%m-%d")
+        tomorrow_times = data.get(tomorrow_key)
+        if tomorrow_times:
+            formatted = formatData(tomorrow_times)
+            if formatted:
+                return formatted[0].get('subuh')
+    logger.error("get_tomorrow_subuh: failed to retrieve tomorrow's Subuh time")
     return None
-    
-  '''url = f'https://www.muis.gov.sg/api/pagecontentapi/GetPrayerTime?v=${str(int(time.time()))}'
-  try:
-    response = requests.get(url, headers={'Cache-Control': 'no-cache'})
-    if response.status_code == 200:
-      data = response.json()
-      return data
-    else:
-      logger.error(f"Failed to retrieve data. Status code: {response.status_code}")
-      return None
-  except requests.exceptions.RequestException as e:
-    logger.error(f"Error: {e}")
-    return None
-  except json.JSONDecodeError as e:
-    logger.error(f"Error decoding JSON: {e}")
-    return None
-    '''
-  
+
 
 # ASYNC Function to save prayer times from the website to a local dict
 async def RefreshPrayerTime():
