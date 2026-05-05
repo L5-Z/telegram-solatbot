@@ -162,7 +162,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     if solatTimesRaw is None or not solatTimesRaw:
         logger.error("Failed to retrieve prayer times from local database scan")
         logger.info("Fetching from API database")
-        state.database_prayer_times = await RefreshPrayerTime()
+        state.database_prayer_times = RefreshPrayerTime()
         logger.info(f"Successfully fetched RAW: {state.database_prayer_times}")
         return
 
@@ -179,7 +179,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     AM_12 = now.replace(hour=0, minute=1, second=0, microsecond=0)
     if now < AM_12 + timedelta(minutes=2) and now >= AM_12:
         logger.info("Updating Prayer Times")
-        state.database_prayer_times = await RefreshPrayerTime()
+        state.database_prayer_times = RefreshPrayerTime()
         pre_reminder_sent.clear()
         print("Updated: ", state.database_prayer_times)
         logger.info("Entering deep sleep after 12:00 AM")
@@ -293,7 +293,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
         if prayer in prayer_keys:
             if prayer == 'isyak':
                 next_prayer_name = 'subuh'  # next day
-                next_prayer_time = await get_tomorrow_subuh() or solatTimes[next_prayer_name]
+                next_prayer_time = get_tomorrow_subuh() or solatTimes[next_prayer_name]
             else:
                 current_index = prayer_keys.index(prayer)
                 next_prayer_name = prayer_keys[current_index + 1]

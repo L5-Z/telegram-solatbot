@@ -4,7 +4,7 @@ from logs import logger
 import state
 from state import sbot, shutdown, NonAsync_loadArr, init_chat_id_dict
 from cycle import cycleCheck
-from scrapeAPI import NonAsync_RefreshPrayerTime
+from scrapeAPI import RefreshPrayerTime
 
 # Import the handler modules so their decorators register with sbot
 import commands  # noqa: F401  (side-effect: registers user-facing handlers)
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     init_chat_id_dict()
     logger.info("User profiles have been loaded")
 
-    pt = NonAsync_RefreshPrayerTime()
+    pt = RefreshPrayerTime()
     if pt:
         state.database_prayer_times = pt
 
