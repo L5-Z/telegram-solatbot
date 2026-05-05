@@ -37,9 +37,7 @@ async def solat_reminder(chat_id, prayer, masa, next_prayer=None, next_prayer_ti
 
 
 # Execute the send_reminder
-async def send_reminder(chat_id: str, prayer: str, masa: str, reminders_enabled_arr, upcoming_prayer_name, next_prayer=None, next_prayer_time=None):
-    # Iterate through chat_id_dict to send reminders
-    #for chat_id, chat_info in chat_id_dict.items():
+async def send_reminder(chat_id: str, prayer: str, masa: str, upcoming_prayer_name, next_prayer=None, next_prayer_time=None):
     try:
         await solat_reminder(chat_id, prayer, masa, next_prayer, next_prayer_time)
         logger.info(f"Sent reminder to {chat_id} for {upcoming_prayer_name} prayer")
@@ -64,8 +62,8 @@ async def send_reminder(chat_id: str, prayer: str, masa: str, reminders_enabled_
 
 # Bulk Send reminders at once
 async def bulk_send_reminders(chat_ids: List[str], prayer: str, masa: str, upcoming_prayer_name, next_prayer=None, next_prayer_time=None):
-    tasks = [send_reminder(chat_id, prayer, masa, chat_ids, upcoming_prayer_name, next_prayer, next_prayer_time) for chat_id in chat_ids]
-    await asyncio.gather(*tasks)
+    tasks = [send_reminder(chat_id, prayer, masa, upcoming_prayer_name, next_prayer, next_prayer_time) for chat_id in chat_ids]
+    results = await asyncio.gather(*tasks)
 
 # Pre-reminder dispatch (fires N minutes before a prayer)
 async def solat_pre_reminder(chat_id, prayer, masa, minutes_before):
@@ -94,7 +92,7 @@ async def send_pre_reminder(chat_id: str, prayer: str, masa: str, minutes_before
 
 async def bulk_send_pre_reminders(chat_ids: List[str], prayer: str, masa: str, minutes_before: int):
     tasks = [send_pre_reminder(chat_id, prayer, masa, minutes_before) for chat_id in chat_ids]
-    await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks)
 
 # Schedule the scraper to run daily at 5 AM SGT
 async def scheduleRun(chat_id_dict):
