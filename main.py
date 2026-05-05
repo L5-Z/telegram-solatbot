@@ -37,7 +37,6 @@ if __name__ == '__main__':
     logger.info("Bot is initialised and will run.")
 
     init_chat_id_dict()
-    print("User profiles have been loaded")
     logger.info("User profiles have been loaded")
 
     pt = NonAsync_RefreshPrayerTime()
@@ -45,10 +44,7 @@ if __name__ == '__main__':
         state.database_prayer_times = pt
 
     NonAsync_loadArr(state.chat_id_dict)
-    print("Prayer Times have been loaded")
     logger.info("Prayer Times have been loaded")
-
-    logger.info("Logging begin.")
 
     loop = asyncio.get_event_loop()
     tasks = [

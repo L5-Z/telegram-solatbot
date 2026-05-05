@@ -48,7 +48,6 @@ async def send_reminder(chat_id: str, prayer: str, masa: str, reminders_enabled_
     except telebot.apihelper.ApiException as e:
         if "bot was blocked by the user" in e.result.text:
             logger.warning(f"Bot was blocked by user {chat_id}")
-            print(f"\n\nBot was blocked by user {chat_id}\n\n")
 
         else:
             logger.error(f"An error occurred in sending reminders: {e}")
@@ -112,11 +111,9 @@ async def scheduleRun(chat_id_dict):
                     # Send message
                     await sbot.send_message(chat_id, times_text, 'MarkdownV2')
                     logger.info(f"Sent daily reminder to {chat_id}")
-                    print("sent reminder", chat_id)
             except telebot.apihelper.ApiException as e:
                 if "bot was blocked by the user" in e.result.text: # e.result.status_code == 403 and 
                     logger.warning(f"Bot was blocked by user {chat_id}")
-                    print(f"\n\nBot was blocked by user {chat_id}\n\n")
                 else:
                     logger.error(f"An error occurred in sending reminders: {e}")
             except Exception as e:
@@ -131,7 +128,6 @@ async def scheduleRun(chat_id_dict):
 
     await save_data(chat_id_dict)
     logger.info(f"Updated database.")
-    print("Scheduled daily has been run\n")
 
 
 async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
@@ -154,9 +150,8 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
         logger.error("Failed to retrieve prayer times from local database scan")
         logger.info("Fetching from API database")
         state.database_prayer_times = await RefreshPrayerTime()
-        logger.info("Successfully fetched")
+        logger.info("Successfully fetched RAW: ", state.database_prayer_times)
         return
-    print("RAW:", solatTimesRaw)
 
     # Empty arrays are valid state (every user opted out of that channel) —
     # only reload from disk if BOTH arrays are empty AND the user database has
@@ -214,11 +209,8 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     for prayer, masa in solatTimes.items():
 
         try:
-
             # Convert AM/PM time to 24-hour format datetime object
             masa_time = datetime.strptime(masa, "%I:%M %p")
-
-            # print(f"{prayer}: {masa} -> {masa_time}")  # Debug Output
         except ValueError:
             logger.warning(f"Invalid time format, masa: {masa}")
             continue
@@ -244,20 +236,20 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
         if now <= this_prayer_time + timedelta(minutes=1):
             break
 
-    # Define the threshold time as the nearest upcoming prayer time
-    print("Confirmed upcoming: ", upcoming_prayer_name)
-    print("Now: ", now)
+   # Add 3 seconds to the upcoming prayer time to create a buffer for the 1-minute reminder window 
+    # and avoid edge cases where the time check might miss the window due to processing delays.
     upcoming_prayer_time = upcoming_prayer_time + timedelta(seconds=3)
-    print("Alert time upcoming: ", upcoming_prayer_time)
+
+    # ========== DEBUGGING OUTPUT ===========
+    #print("RAW:", solatTimesRaw);print("Now: ", now);print("Upcoming: ", upcoming_prayer_name, upcoming_prayer_time)
 
     # Pre-reminder dispatch (5/10/15 min before the upcoming prayer)
-    # Sleeping 61s after a fire skips the rest of the 1-minute window so the
-    # same pre-reminder won't re-fire. Safe because slots are ≥5 min apart.
     pre_slots = [
         (5,  custom_5_enabled_arr),
         (10, custom_10_enabled_arr),
         (15, custom_15_enabled_arr),
     ]
+
     # --- Memo-based variant (uncomment + remove the sleep below to switch back) ---
     # today_key = now.strftime('%Y-%m-%d')
     # for minutes_before, group_arr in pre_slots:
@@ -271,6 +263,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
     #         await bulk_send_pre_reminders(group_arr, upcoming_prayer_name, masa, minutes_before)
     #         pre_reminder_sent.add(memo_key)
     # --- end memo variant ---
+
     for minutes_before, group_arr in pre_slots:
         if not group_arr:
             continue
