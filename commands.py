@@ -100,7 +100,6 @@ async def handle_click(message):
 
 
 # /start
-@sbot.message_handler(regexp='start')
 @sbot.message_handler(commands=['start'])
 async def start_command(message):
     intro_message = "Assalamu'alaikum! I am a bot that provides prayer time notifications for Singapore.\n\n"
@@ -130,7 +129,6 @@ async def start_command(message):
 
 
 # /stop
-@sbot.message_handler(regexp='stop')
 @sbot.message_handler(commands=['stop'])
 async def stop_command(message):
     await checker(message.chat.id)
@@ -141,7 +139,6 @@ async def stop_command(message):
 
 
 # /settings
-@sbot.message_handler(regexp='settings')
 @sbot.message_handler(commands=['settings'])
 async def settings_command(message):
     await checker(message.chat.id)
@@ -176,7 +173,6 @@ async def settings_command(message):
 
 
 # /timings
-@sbot.message_handler(regexp='timings')
 @sbot.message_handler(commands=['timings'])
 async def timings_command(message):
     await checker(message.chat.id)
@@ -193,7 +189,6 @@ async def upcoming_command(message):
 
 
 # /qiblat
-@sbot.message_handler(regexp='qiblat')
 @sbot.message_handler(commands=['qiblat'])
 async def qiblat_info(message):
     await checker(message.chat.id)
@@ -204,7 +199,6 @@ async def qiblat_info(message):
 
 
 # /feedback
-@sbot.message_handler(regexp='feedback')
 @sbot.message_handler(commands=['feedback'])
 async def feedback_form(message):
     await checker(message.chat.id)
@@ -214,7 +208,6 @@ async def feedback_form(message):
 
 
 # /donate
-@sbot.message_handler(regexp='donate')
 @sbot.message_handler(commands=['donate'])
 async def donate_info(message):
     await checker(message.chat.id)
@@ -234,7 +227,6 @@ async def donate_info(message):
 
 
 # /zakat
-@sbot.message_handler(regexp='zakat')
 @sbot.message_handler(commands=['zakat'])
 async def zakat_info(message):
     await checker(message.chat.id)
@@ -243,7 +235,6 @@ async def zakat_info(message):
 
 
 # /daily
-@sbot.message_handler(regexp='daily')
 @sbot.message_handler(commands=['daily'])
 async def daily_command(message):
     await checker(message.chat.id)
@@ -255,7 +246,6 @@ async def daily_command(message):
 
 
 # /toggle
-@sbot.message_handler(regexp='toggle')
 @sbot.message_handler(commands=['toggle'])
 async def toggle_command(message):
     await checker(message.chat.id)
@@ -392,7 +382,6 @@ async def handle_prereminder_toggle(call):
 
 
 # /menu_off
-@sbot.message_handler(regexp='menu_off')
 @sbot.message_handler(commands=['menu_off'])
 async def menu_off_command(message):
     await checker(message.chat.id)
@@ -401,7 +390,6 @@ async def menu_off_command(message):
 
 
 # /help
-@sbot.message_handler(regexp='help')
 @sbot.message_handler(commands=['help'])
 async def help_command(message):
     await checker(message.chat.id)
@@ -423,7 +411,6 @@ async def help_command(message):
 
 
 # /patch
-@sbot.message_handler(regexp='patch')
 @sbot.message_handler(commands=['patch'])
 async def patch_command(message):
     await checker(message.chat.id)
