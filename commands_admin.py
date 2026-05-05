@@ -2,6 +2,7 @@ import os
 
 from telebot import apihelper
 
+from funcs import format_text
 from logs import logger
 from state import (
     sbot, chat_id_dict, is_admin, ADMIN_CHAT_ID,
@@ -17,17 +18,19 @@ from blocked import block_check
 async def announce(message):
     if not is_admin(message.chat.id):
         return
-    announcement_text = message.text.split(' ', 1)[1]
+    raw_text = message.text.split(' ', 1)[1]
+    announcement_text = await format_text(raw_text)
     admin_message = "Welcome Admin, the following announcement has been posted:\n"
-    welcome_admin = admin_message + announcement_text
+    welcome_admin = admin_message + raw_text
 
     for chat_id, _ in chat_id_dict.items():
         if chat_id == str(ADMIN_CHAT_ID):
             await sbot.send_message(chat_id, welcome_admin)
+            await sbot.send_message(chat_id, announcement_text, parse_mode='MarkdownV2', reply_markup=main_menu)
             continue
         logger.info(f"Attempting to send announcement to {chat_id}")
         try:
-            await sbot.send_message(chat_id, announcement_text, reply_markup=main_menu)
+            await sbot.send_message(chat_id, announcement_text, parse_mode='MarkdownV2', reply_markup=main_menu)
             logger.info(f"Sent announcement to {chat_id}")
         except apihelper.ApiException as e:
             logger.error(f"Failed to send announcement to {chat_id}")
