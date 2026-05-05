@@ -163,7 +163,7 @@ async def cycleCheck(chat_id_dict, reminders_enabled_arr, daily_enabled_arr,
         logger.error("Failed to retrieve prayer times from local database scan")
         logger.info("Fetching from API database")
         state.database_prayer_times = await RefreshPrayerTime()
-        logger.info("Successfully fetched RAW: ", state.database_prayer_times)
+        logger.info(f"Successfully fetched RAW: {state.database_prayer_times}")
         return
 
     # Empty arrays are valid state (every user opted out of that channel) —
