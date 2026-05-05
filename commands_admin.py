@@ -17,8 +17,6 @@ from blocked import block_check
 async def announce(message):
     if not is_admin(message.chat.id):
         return
-
-    print("\nAdmin is sending an announcement")
     announcement_text = message.text.split(' ', 1)[1]
     admin_message = "Welcome Admin, the following announcement has been posted:\n"
     welcome_admin = admin_message + announcement_text
@@ -31,12 +29,10 @@ async def announce(message):
         try:
             await sbot.send_message(chat_id, announcement_text, reply_markup=main_menu)
             logger.info(f"Sent announcement to {chat_id}")
-            print("sent announcement", chat_id)
         except apihelper.ApiException as e:
             logger.error(f"Failed to send announcement to {chat_id}")
             if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
                 logger.warning(f"Bot was blocked by user {chat_id}")
-                print(f"\n\nBot was blocked by user {chat_id}\n\n")
             else:
                 logger.error(f"An error occurred in sending announcement: {e}")
         except Exception as e:
@@ -47,7 +43,7 @@ async def announce(message):
         finally:
             continue
 
-    print("Announcement: ", announcement_text, " has been sent\n")
+    logger.info(f"Announcement: {announcement_text} has been sent")
 
 
 # /add — manually register a user
@@ -57,13 +53,13 @@ async def addUser(message):
         return
 
     new_chat_id = message.text.split(' ', 1)[1]
-    print("\nAdmin is adding user: ", new_chat_id)
+    logger.info(f"Admin is adding user: {new_chat_id}")
     admin_message = "Welcome Admin, the following user is being added:\n"
     notify = admin_message + new_chat_id
 
     await checker(new_chat_id)
 
-    print("User: ", new_chat_id, " has been added\n")
+    logger.info(f"User: {new_chat_id} has been added")
     await sbot.send_message(message.chat.id, notify)
 
 
@@ -90,7 +86,7 @@ async def dumpDict(message):
     if not is_admin(message.chat.id):
         return
 
-    print("\nAdmin is dumping user database:\n")
+    logger.info("\nAdmin is dumping user database:\n")
     data_dump = "User ID Dump:\n\n"
 
     usercount = 0
@@ -101,7 +97,7 @@ async def dumpDict(message):
 
     data_dump += "\nTotal Individual Users: " + str(usercount) + "\n"
     data_dump += "\n\nTotal Users: " + str(len(chat_id_dict)) + "\n"
-    print("Successfully dumped data\n")
+    logger.info("Successfully dumped data")
     await sbot.send_message(message.chat.id, data_dump)
 
 
@@ -111,12 +107,12 @@ async def peekDict(message):
     if not is_admin(message.chat.id):
         return
 
-    print("\nAdmin is viewing user database:\n")
+    logger.info("\nAdmin is viewing user database:\n")
 
     data_dump = "User Settings:\n\n"
     data_dump += str(chat_id_dict) + "\n"
 
-    print("Successfully output data\n")
+    logger.info("Successfully output data")
     await sbot.send_message(message.chat.id, data_dump)
 
 
@@ -126,7 +122,7 @@ async def updateDB(message):
     if not is_admin(message.chat.id):
         return
 
-    print("\nAdmin is updating database")
+    logger.info("\nAdmin is updating database")
     admin_message = "Welcome Admin, the database has been updated.\n"
 
     for chat_id, chat_data in chat_id_dict.items():
@@ -141,7 +137,7 @@ async def updateDB(message):
     await save_data(chat_id_dict)
 
     await sbot.send_message(message.chat.id, admin_message)
-    print("The database has been updated.\n")
+    logger.info("The database has been updated.")
 
 
 # /blocked — scan and purge users who blocked the bot
@@ -150,13 +146,13 @@ async def blockedUsers(message):
     if not is_admin(message.chat.id):
         return
 
-    print("\nAdmin is viewing blockers")
+    logger.info("\nAdmin is viewing blockers")
 
     admin_message = "Welcome Admin, here are the blockers:\n"
     await sbot.send_message(message.chat.id, admin_message)
     await block_check(chat_id_dict, logger, delete_user)
 
-    print("The blockers have been displayed.\n")
+    logger.info("The blockers have been displayed.")
 
 
 # /whisper — send a private message to a single user
@@ -165,7 +161,7 @@ async def whisper_user(message):
     if not is_admin(message.chat.id):
         return
 
-    print("\nAdmin is whispering")
+    logger.info("\nAdmin is whispering")
     _, receiver, whisper_text = message.text.split(' ', 2)
     admin_message = "Welcome Admin, whisper received:\n"
     receiver_message = f"\nWas sent to {receiver}"
@@ -176,12 +172,11 @@ async def whisper_user(message):
         await sbot.send_message(receiver, whisper_text)
         logger.info(f"Sent whisper to {receiver}")
         await sbot.send_message(str(ADMIN_CHAT_ID), welcome_admin)
-        print("sent whisper: ", receiver)
+        logger.info(f"Sent whisper to {receiver}")
     except apihelper.ApiException as e:
         logger.error(f"Failed to send whisper to {receiver}")
         if e.result.status_code == 403 and "bot was blocked by the user" in e.result.text:
             logger.warning(f"Bot was blocked by user {receiver}")
-            print(f"\n\nBot was blocked by user {receiver}\n\n")
         else:
             logger.error(f"An error occurred in sending whisper: {e}")
     except Exception as e:
@@ -197,7 +192,6 @@ async def exitBot(message):
     if not is_admin(message.chat.id):
         return
 
-    print("Admin has initiated bot shutdown.")
     logger.info("Admin has initiated bot shutdown.")
     await sbot.send_message(message.chat.id, "Bot shutting down.")
     await shutdown()
