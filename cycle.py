@@ -41,7 +41,7 @@ async def send_reminder(chat_id: str, prayer: str, masa: str, upcoming_prayer_na
     try:
         await solat_reminder(chat_id, prayer, masa, next_prayer, next_prayer_time)
         logger.info(f"Sent reminder to {chat_id} for {upcoming_prayer_name} prayer")
-        print("sent reminder", chat_id)
+        return True
     
     except telebot.apihelper.ApiException as e:
         if "bot was blocked by the user" in e.result.text:
@@ -57,13 +57,22 @@ async def send_reminder(chat_id: str, prayer: str, masa: str, upcoming_prayer_na
             # Catch all other possible errors to avoid stopping the loop
             logger.error(f"Unexpected error for {chat_id}: {e}")
     
-    finally:
-        return
+    return False
 
 # Bulk Send reminders at once
 async def bulk_send_reminders(chat_ids: List[str], prayer: str, masa: str, upcoming_prayer_name, next_prayer=None, next_prayer_time=None):
     tasks = [send_reminder(chat_id, prayer, masa, upcoming_prayer_name, next_prayer, next_prayer_time) for chat_id in chat_ids]
     results = await asyncio.gather(*tasks)
+    
+    successful_ids = [chat_id for chat_id, success in zip(chat_ids, results) if success]
+    if successful_ids:
+        logger.info(
+            f"Sent {len(successful_ids)} reminders for {upcoming_prayer_name} ({masa}) to:\n{'\n- '.join(successful_ids)}"
+        )
+    else:
+        logger.info(f"No successful reminders sent for {upcoming_prayer_name} ({masa})")
+    
+    return
 
 # Pre-reminder dispatch (fires N minutes before a prayer)
 async def solat_pre_reminder(chat_id, prayer, masa, minutes_before):
@@ -74,12 +83,11 @@ async def send_pre_reminder(chat_id: str, prayer: str, masa: str, minutes_before
     try:
         await solat_pre_reminder(chat_id, prayer, masa, minutes_before)
         logger.info(f"Sent {minutes_before}-min pre-reminder to {chat_id} for {prayer}")
-        print(f"sent {minutes_before}-min pre-reminder", chat_id)
+        return True
 
     except telebot.apihelper.ApiException as e:
         if "bot was blocked by the user" in e.result.text:
             logger.warning(f"Bot was blocked by user {chat_id}")
-            print(f"\n\nBot was blocked by user {chat_id}\n\n")
         else:
             logger.error(f"An error occurred in sending pre-reminders: {e}")
     except Exception as e:
@@ -87,12 +95,23 @@ async def send_pre_reminder(chat_id: str, prayer: str, masa: str, minutes_before
             logger.warning(f"Bot was blocked by user {chat_id} (caught in generic Exception)")
         else:
             logger.error(f"Unexpected error for {chat_id}: {e}")
-    finally:
-        return
+
+    return False
 
 async def bulk_send_pre_reminders(chat_ids: List[str], prayer: str, masa: str, minutes_before: int):
     tasks = [send_pre_reminder(chat_id, prayer, masa, minutes_before) for chat_id in chat_ids]
     results = await asyncio.gather(*tasks)
+    
+    successful_ids = [chat_id for chat_id, success in zip(chat_ids, results) if success]
+    if successful_ids:
+        logger.info(
+            tally = f"{minutes_before}-min pre-reminder sent to:\n"
+            f"{minutes_before}-min pre-reminder sent to ({len(successful_ids)}): {'\n- '.join(successful_ids)}"
+        )
+    else:
+        logger.info(f"No successful pre-reminders sent for {minutes_before}-min before {prayer}")
+    
+    return
 
 # Schedule the scraper to run daily at 5 AM SGT
 async def scheduleRun(chat_id_dict):
