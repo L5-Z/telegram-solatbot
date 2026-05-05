@@ -66,9 +66,7 @@ async def bulk_send_reminders(chat_ids: List[str], prayer: str, masa: str, upcom
     
     successful_ids = [chat_id for chat_id, success in zip(chat_ids, results) if success]
     if successful_ids:
-        logger.info(
-            f"Sent {len(successful_ids)} reminders for {upcoming_prayer_name} ({masa}) to:\n{'\n- '.join(successful_ids)}"
-        )
+        logger.info(f"Sent {len(successful_ids)} reminders for {upcoming_prayer_name} ({masa}) to:\n" + '\n- '.join(successful_ids))
     else:
         logger.info(f"No successful reminders sent for {upcoming_prayer_name} ({masa})")
     
@@ -105,9 +103,7 @@ async def bulk_send_pre_reminders(chat_ids: List[str], prayer: str, masa: str, m
     successful_ids = [chat_id for chat_id, success in zip(chat_ids, results) if success]
     if successful_ids:
         logger.info(
-            tally = f"{minutes_before}-min pre-reminder sent to:\n"
-            f"{minutes_before}-min pre-reminder sent to ({len(successful_ids)}): {'\n- '.join(successful_ids)}"
-        )
+            f"{minutes_before}-min pre-reminder sent to ({len(successful_ids)}):\n" +'\n- '.join(successful_ids))
     else:
         logger.info(f"No successful pre-reminders sent for {minutes_before}-min before {prayer}")
     
