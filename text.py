@@ -47,7 +47,7 @@ async def reminder_text(chat_id, prayer, masa, next_prayer=None, next_prayer_tim
         reminder_message += "May your fardh prayer be blessed! \U0001F932\n"
 
     if next_prayer and next_prayer_time:
-        reminder_message += f"_Next prayer:_ {next_prayer.capitalize()} at _{next_prayer_time}_"
+        reminder_message += f"_Next:_ {next_prayer.capitalize()} at _{next_prayer_time}_"
 
     return reminder_message
 
